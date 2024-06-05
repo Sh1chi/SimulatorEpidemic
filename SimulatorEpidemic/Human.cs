@@ -51,47 +51,16 @@ namespace SimulatorEpidemic
             _position += _direction * _speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Проверка столкновения с границами экрана и изменение направления при необходимости
-            if (_position.X - _radius <= 0 || _position.X + _radius >= _screenWidth)
-            {
-                _direction.X = -_direction.X;
-                _position.X = MathHelper.Clamp(_position.X, _radius, _screenWidth - _radius);
-            }
-
-            if (_position.Y - _radius <= 0 || _position.Y + _radius >= _screenHeight)
-            {
-                _direction.Y = -_direction.Y;
-                _position.Y = MathHelper.Clamp(_position.Y, _radius, _screenHeight - _radius);
-            }
+            CheckScreenCollision();
 
             // Обновление таймера для изменения направления движения
-            changeDirectionTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (changeDirectionTimer >= timeUntilNextChange)
-            {
-                _direction = GetRandomDirection();
-                ResetChangeDirectionTimer();
-            }
+            UpdateDirectionTimer(gameTime);
         }
 
         // Метод для отрисовки человека
         public void Draw(SpriteBatch spriteBatch, Texture2D texture)
         {
-            Color color;
-            // Выбор цвета в зависимости от состояния здоровья
-            switch (State)
-            {
-                case HealthState.Healthy:
-                    color = Color.Green; // Здоровый - зеленый
-                    break;
-                case HealthState.Infected:
-                    color = Color.Red; // Инфицированный - красный
-                    break;
-                case HealthState.Recovered:
-                    color = Color.Blue; // Выздоровевший - синий
-                    break;
-                default:
-                    color = Color.White; // Неизвестное состояние - белый
-                    break;
-            }
+            Color color = GetHealthColor();
 
             // Отрисовка текстуры с соответствующим цветом на текущей позиции
             spriteBatch.Draw(
@@ -107,6 +76,47 @@ namespace SimulatorEpidemic
             );
         }
 
+        // Проверка на столкновение с другим объектом
+        public bool CheckCollision(Human other)
+        {
+            // Рассчитываем расстояние между центрами двух объектов
+            float distance = Vector2.Distance(_position, other._position);
+            // Проверяем, меньше ли это расстояние суммы радиусов двух объектов
+            return distance < _radius + other._radius;
+        }
+
+        // Обработка столкновения с другим объектом
+        public void HandleCollision(Human other)
+        {
+            // Вычисляем нормаль столкновения
+            Vector2 normal = _position - other._position;
+            normal.Normalize();
+
+            // Рассчитываем относительную скорость
+            Vector2 relativeVelocity = _direction - other._direction;
+            // Находим скорость вдоль нормали
+            float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
+
+            // Не обрабатываем столкновение, если скорости разделяются
+            if (velocityAlongNormal > 0)
+                return;
+
+            float restitution = 1f; // Коэффициент восстановления (1 - идеально упругий удар)
+            // Вычисляем импульс
+            float impulseScalar = -(1 + restitution) * velocityAlongNormal;
+            impulseScalar /= (1 / _radius + 1 / other._radius);
+
+            Vector2 impulse = impulseScalar * normal;
+            // Применяем импульс к направлениям объектов
+            _direction += impulse / _radius;
+            other._direction -= impulse / other._radius;
+
+            // Обеспечиваем небольшое раздвижение объектов, чтобы избежать застревания
+            Vector2 separation = normal * (_radius + other._radius - Vector2.Distance(_position, other._position)) / 2f;
+            _position += separation;
+            other._position -= separation;
+        }
+
         // Метод для получения случайного направления движения
         private Vector2 GetRandomDirection()
         {
@@ -118,8 +128,63 @@ namespace SimulatorEpidemic
         // Метод для сброса таймера и установки нового случайного интервала для изменения направления
         private void ResetChangeDirectionTimer()
         {
-            changeDirectionTimer = 0f;
-            timeUntilNextChange = (float)(random.NextDouble() * 3) + 1; // Случайный интервал от 1 до 4 секунд
+            changeDirectionTimer = 0f; // Сбрасываем таймер до 0
+                                       // Устанавливаем случайный интервал до следующего изменения направления, от 1 до 4 секунд
+            timeUntilNextChange = (float)(random.NextDouble() * 3) + 1;
+        }
+
+        // Обновление таймера для изменения направления
+        private void UpdateDirectionTimer(GameTime gameTime)
+        {
+            // Увеличиваем таймер на прошедшее время с момента последнего обновления
+            changeDirectionTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // Проверяем, если таймер достиг или превысил установленный интервал
+            if (changeDirectionTimer >= timeUntilNextChange)
+            {
+                // Устанавливаем новое случайное направление
+                _direction = GetRandomDirection();
+                // Сбрасываем таймер и устанавливаем новый интервал
+                ResetChangeDirectionTimer();
+            }
+        }
+
+        // Проверка столкновения с границами экрана и изменение направления при необходимости
+        private void CheckScreenCollision()
+        {
+            // Проверяем столкновение с левой или правой границей экрана
+            if (_position.X - _radius <= 0 || _position.X + _radius >= _screenWidth)
+            {
+                // Меняем направление движения по оси X на противоположное
+                _direction.X = -_direction.X;
+                // Ограничиваем позицию так, чтобы объект оставался в пределах экрана
+                _position.X = MathHelper.Clamp(_position.X, _radius, _screenWidth - _radius);
+            }
+
+            // Проверяем столкновение с верхней или нижней границей экрана
+            if (_position.Y - _radius <= 0 || _position.Y + _radius >= _screenHeight)
+            {
+                // Меняем направление движения по оси Y на противоположное
+                _direction.Y = -_direction.Y;
+                // Ограничиваем позицию так, чтобы объект оставался в пределах экрана
+                _position.Y = MathHelper.Clamp(_position.Y, _radius, _screenHeight - _radius);
+            }
+        }
+
+        // Получение цвета на основе состояния здоровья
+        private Color GetHealthColor()
+        {
+            switch (State)
+            {
+                case HealthState.Healthy:
+                    return Color.Green; // Здоровый - зеленый
+                case HealthState.Infected:
+                    return Color.Red; // Инфицированный - красный
+                case HealthState.Recovered:
+                    return Color.Blue; // Выздоровевший - синий
+                default:
+                    return Color.White; // Неизвестное состояние - белый
+            }
         }
     }
 }

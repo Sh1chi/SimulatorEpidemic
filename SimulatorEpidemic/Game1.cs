@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace SimulatorEpidemic
 {
@@ -10,7 +11,7 @@ namespace SimulatorEpidemic
     {
         private GraphicsDeviceManager _graphics; // Управляет графическими устройствами
         private SpriteBatch _spriteBatch; // Отвечает за пакетную отрисовку спрайтов
-        private Human _human; // Объект человека в игре
+        private List<Human> _humans; // Список объектов человека в игре
         private Texture2D _humanTexture; // Текстура для отображения человека
         private Random random; // Объект для генерации случайных чисел
 
@@ -37,8 +38,12 @@ namespace SimulatorEpidemic
             // Загрузка текстуры человека
             _humanTexture = Content.Load<Texture2D>("Human");
 
-            // Инициализация объекта человека с размерами экрана и радиусом, основанным на ширине текстуры
-            _human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2);
+            // Инициализация списка людей
+            _humans = new List<Human>();
+            for (int i = 0; i < 50; i++)
+            {
+                _humans.Add(new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2));
+            }
         }
 
         // Обновление логики игры
@@ -48,10 +53,30 @@ namespace SimulatorEpidemic
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Обновление состояния человека
-            _human.Update(gameTime);
+            // Обновление состояния каждого человека
+            foreach (var human in _humans)
+            {
+                human.Update(gameTime);
+            }
 
-            base.Update(gameTime);
+            // Проверка и обработка столкновений между людьми
+            for (int i = 0; i < _humans.Count; i++)
+            {
+                for (int j = i + 1; j < _humans.Count; j++)
+                {
+                    Human human1 = _humans[i]; // Получаем первого человека из списка
+                    Human human2 = _humans[j]; // Получаем второго человека из списка
+
+                    // Проверяем, столкнулись ли эти два человека
+                    if (human1.CheckCollision(human2))
+                    {
+                        // Если столкновение произошло, обрабатываем его
+                        human1.HandleCollision(human2);
+                    }
+                }
+            }
+
+                base.Update(gameTime);
         }
 
         // Отрисовка игры
@@ -63,7 +88,10 @@ namespace SimulatorEpidemic
             // Начало пакетной отрисовки
             _spriteBatch.Begin();
             // Отрисовка человека с использованием текстуры
-            _human.Draw(_spriteBatch, _humanTexture);
+            foreach (var human in _humans)
+            {
+                human.Draw(_spriteBatch, _humanTexture);
+            }
             // Завершение пакетной отрисовки
             _spriteBatch.End();
 
