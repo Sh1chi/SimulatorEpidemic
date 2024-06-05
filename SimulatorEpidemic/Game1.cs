@@ -8,6 +8,8 @@ namespace SimulatorEpidemic
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private Human _human;
+        private Texture2D _circleTexture;
 
         public Game1()
         {
@@ -18,8 +20,6 @@ namespace SimulatorEpidemic
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
         }
 
@@ -27,7 +27,40 @@ namespace SimulatorEpidemic
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            // Создание текстуры круга 20x20
+            _circleTexture = CreateCircleTexture(10);
+
+            // Инициализация человека
+            _human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        }
+
+        private Texture2D CreateCircleTexture(int radius)
+        {
+            int diameter = radius * 2;
+            Texture2D texture = new Texture2D(GraphicsDevice, diameter, diameter);
+            Color[] colorData = new Color[diameter * diameter];
+
+            float radiussq = radius * radius;
+
+            for (int x = 0; x < diameter; x++)
+            {
+                for (int y = 0; y < diameter; y++)
+                {
+                    int index = x * diameter + y;
+                    Vector2 pos = new Vector2(x - radius, y - radius);
+                    if (pos.LengthSquared() <= radiussq)
+                    {
+                        colorData[index] = Color.White;
+                    }
+                    else
+                    {
+                        colorData[index] = Color.Transparent;
+                    }
+                }
+            }
+
+            texture.SetData(colorData);
+            return texture;
         }
 
         protected override void Update(GameTime gameTime)
@@ -35,7 +68,7 @@ namespace SimulatorEpidemic
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            // Логика обновления
 
             base.Update(gameTime);
         }
@@ -44,7 +77,9 @@ namespace SimulatorEpidemic
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            _spriteBatch.Begin();
+            _human.Draw(_spriteBatch, _circleTexture);
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
