@@ -11,7 +11,9 @@ namespace SimulatorEpidemic
         {
             Healthy,   // Здоров
             Infected,  // Инфицирован
-            Recovered  // Выздоровевший
+            Recovered,  // Выздоровевший
+            Dead       // Мертвый
+
         }
 
         private Vector2 _position;       // Позиция человека на экране
@@ -23,6 +25,9 @@ namespace SimulatorEpidemic
         private float infectionChance;   // Вероятность заражения при столкновении
         private float recoveryTime;      // Время выздоровления в секундах
         private float infectionTimer;    // Таймер для отслеживания времени заражения
+        private float deathChance;       // Вероятность смерти во время болезни
+        private float deathCheckInterval; // Интервал проверки на смерть в секунда
+        private float deathCheckTimer;   // Таймер для отслеживания времени до следующей проверки на смерть
         private Random random;           // Объект для генерации случайных чисел
 
         public HealthState State { get; set; }  // Текущее состояние здоровья человека
@@ -31,7 +36,7 @@ namespace SimulatorEpidemic
         private float timeUntilNextChange;    // Время до следующего изменения направления
 
         // Конструктор человека, инициализирующий его позицию, состояние здоровья и параметры движения
-        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime)
+        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval)
         {
             random = new Random();
             _screenWidth = screenWidth;
@@ -39,6 +44,8 @@ namespace SimulatorEpidemic
             _radius = radius;
             this.infectionChance = infectionChance;
             this.recoveryTime = recoveryTime;
+            this.deathChance = deathChance;
+            this.deathCheckInterval = deathCheckInterval;
             _position = new Vector2(random.Next((int)_radius, screenWidth - (int)_radius), random.Next((int)_radius, screenHeight - (int)_radius));
             _speed = 100f;
             _direction = GetRandomDirection();
@@ -48,6 +55,7 @@ namespace SimulatorEpidemic
 
             State = HealthState.Healthy; // Начальное состояние - здоров
             infectionTimer = 0f; // Инициализация таймера заражения
+            deathCheckTimer = 0f; // Инициализация таймера проверки на смерть
         }
 
         // Метод для обновления состояния человека
@@ -88,6 +96,10 @@ namespace SimulatorEpidemic
         // Проверка на столкновение с другим объектом
         public bool CheckCollision(Human other)
         {
+            // Мертвые не участвуют в коллизиях
+            if (this.State == HealthState.Dead || other.State == HealthState.Dead)
+                return false;
+
             // Рассчитываем расстояние между центрами двух объектов
             float distance = Vector2.Distance(_position, other._position);
             // Проверяем, меньше ли это расстояние суммы радиусов двух объектов
@@ -205,7 +217,7 @@ namespace SimulatorEpidemic
             }
         }
 
-        // Обновление таймера заражения и проверка выздоровления
+        // Обновление таймера заражения и проверка выздоровления или смерти
         private void UpdateInfectionTimer(GameTime gameTime)
         {
             // Проверяем, если текущий объект находится в состоянии "инфицирован"
@@ -213,8 +225,25 @@ namespace SimulatorEpidemic
             {
                 // Увеличиваем таймер заражения на время, прошедшее с момента последнего обновления
                 infectionTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                // Увеличиваем таймер проверки на смерть
+                deathCheckTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                // Проверяем, если таймер достиг или превысил время выздоровления
+                // Проверяем, если таймер проверки на смерть достиг интервала проверки
+                if (deathCheckTimer >= deathCheckInterval)
+                {
+                    // Сбрасываем таймер проверки на смерть
+                    deathCheckTimer = 0f;
+                    // Проверяем вероятность смерти
+                    if (random.NextDouble() < deathChance)
+                    {
+                        // Если вероятность сработала, изменяем состояние на "мертвый"
+                        State = HealthState.Dead;
+                        _direction = Vector2.Zero; // Остановка движения при смерти
+                        _speed = 0f; // Остановка движения при смерти
+                    }
+                }
+
+                // Проверяем, если таймер заражения достиг времени выздоровления
                 if (infectionTimer >= recoveryTime)
                 {
                     // Изменяем состояние на "выздоровевший"
@@ -234,6 +263,8 @@ namespace SimulatorEpidemic
                     return Color.Red; // Инфицированный - красный
                 case HealthState.Recovered:
                     return Color.Blue; // Выздоровевший - синий
+                case HealthState.Dead:
+                    return Color.Black; // Мертвый - черный
                 default:
                     return Color.White; // Неизвестное состояние - белый
             }
