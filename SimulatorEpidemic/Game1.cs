@@ -19,6 +19,7 @@ namespace SimulatorEpidemic
         private const float RecoveryTime = 10f; // Время выздоровления в секундах
         private const float DeathChance = 0.05f; // Вероятность смерти во время болезни
         private const float DeathCheckInterval = 3f; // Интервал проверки шанса смерти в секундах
+        private const float IncubationPeriod = 5f; // Длительность инкубационного периода в секундах
 
 
         // Конструктор игры
@@ -48,7 +49,7 @@ namespace SimulatorEpidemic
             _humans = new List<Human>();
             for (int i = 0; i < 50; i++)
             {
-                var human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval);
+                var human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationPeriod);
                 if (i < 5) // Первоначально заражаем 5 человек
                 {
                     human.State = Human.HealthState.Infected;

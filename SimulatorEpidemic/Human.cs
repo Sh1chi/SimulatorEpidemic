@@ -10,6 +10,7 @@ namespace SimulatorEpidemic
         public enum HealthState
         {
             Healthy,   // Здоров
+            Incubating, // Инкубационный период
             Infected,  // Инфицирован
             Recovered,  // Выздоровевший
             Dead       // Мертвый
@@ -19,24 +20,31 @@ namespace SimulatorEpidemic
         private Vector2 _position;       // Позиция человека на экране
         private Vector2 _direction;      // Направление движения человека
         private float _speed;            // Скорость движения человека
+        private float _radius;           // Радиус круга, представляющего человека
+
         private int _screenWidth;        // Ширина экрана
         private int _screenHeight;       // Высота экрана
-        private float _radius;           // Радиус круга, представляющего человека
+
+
         private float infectionChance;   // Вероятность заражения при столкновении
+        private float incubationTime;    // Время инкубационного периода в секундах
         private float recoveryTime;      // Время выздоровления в секундах
         private float infectionTimer;    // Таймер для отслеживания времени заражения
+
         private float deathChance;       // Вероятность смерти во время болезни
         private float deathCheckInterval; // Интервал проверки на смерть в секунда
+
         private float deathCheckTimer;   // Таймер для отслеживания времени до следующей проверки на смерть
         private Random random;           // Объект для генерации случайных чисел
-
-        public HealthState State { get; set; }  // Текущее состояние здоровья человека
 
         private float changeDirectionTimer;   // Таймер для изменения направления движения
         private float timeUntilNextChange;    // Время до следующего изменения направления
 
+        public HealthState State { get; set; }  // Текущее состояние здоровья человека
+
+
         // Конструктор человека, инициализирующий его позицию, состояние здоровья и параметры движения
-        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval)
+        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval, float incubationTime)
         {
             random = new Random();
             _screenWidth = screenWidth;
@@ -46,6 +54,7 @@ namespace SimulatorEpidemic
             this.recoveryTime = recoveryTime;
             this.deathChance = deathChance;
             this.deathCheckInterval = deathCheckInterval;
+            this.incubationTime = incubationTime;
             _position = new Vector2(random.Next((int)_radius, screenWidth - (int)_radius), random.Next((int)_radius, screenHeight - (int)_radius));
             _speed = 100f;
             _direction = GetRandomDirection();
@@ -142,23 +151,25 @@ namespace SimulatorEpidemic
         public void TryInfect(Human other)
         {
             // Проверяем, если текущий объект заражен, а другой человек здоров
-            if (this.State == HealthState.Infected && other.State == HealthState.Healthy)
+            if ((this.State == HealthState.Infected || this.State == HealthState.Incubating) && other.State == HealthState.Healthy)
             {
                 // Генерируем случайное число и сравниваем его с вероятностью заражения
                 if (random.NextDouble() < infectionChance)
                 {
                     // Если вероятность сработала, заражаем другого человека
-                    other.State = HealthState.Infected;
+                    other.State = HealthState.Incubating;
+                    other.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
                 }
             }
             // Проверяем, если текущий объект здоров, а другой человек заражен
-            else if (this.State == HealthState.Healthy && other.State == HealthState.Infected)
+            else if (this.State == HealthState.Healthy && (other.State == HealthState.Infected || other.State == HealthState.Incubating))
             {
                 // Генерируем случайное число и сравниваем его с вероятностью заражения
                 if (random.NextDouble() < infectionChance)
                 {
                     // Если вероятность сработала, заражаем текущего человека
-                    this.State = HealthState.Infected;
+                    this.State = HealthState.Incubating;
+                    this.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
                 }
             }
         }
@@ -221,15 +232,22 @@ namespace SimulatorEpidemic
         private void UpdateInfectionTimer(GameTime gameTime)
         {
             // Проверяем, если текущий объект находится в состоянии "инфицирован"
-            if (State == HealthState.Infected)
+            if (State == HealthState.Incubating || State == HealthState.Infected)
             {
                 // Увеличиваем таймер заражения на время, прошедшее с момента последнего обновления
                 infectionTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 // Увеличиваем таймер проверки на смерть
                 deathCheckTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                // Проверяем, если таймер проверки на смерть достиг интервала проверки
-                if (deathCheckTimer >= deathCheckInterval)
+                // Проверка перехода состояния из "инкубационный период" в "инфицирован"
+                if (State == HealthState.Incubating && infectionTimer >= incubationTime)
+                {
+                    // Если состояние инкубационное и таймер достиг времени инкубации, меняем состояние на "инфицирован"
+                    State = HealthState.Infected;
+                }
+
+                    // Проверяем, если таймер проверки на смерть достиг интервала проверки
+                    if (State == HealthState.Infected && deathCheckTimer >= deathCheckInterval)
                 {
                     // Сбрасываем таймер проверки на смерть
                     deathCheckTimer = 0f;
@@ -244,7 +262,7 @@ namespace SimulatorEpidemic
                 }
 
                 // Проверяем, если таймер заражения достиг времени выздоровления
-                if (infectionTimer >= recoveryTime)
+                if (State == HealthState.Infected && infectionTimer >= incubationTime + recoveryTime)
                 {
                     // Изменяем состояние на "выздоровевший"
                     State = HealthState.Recovered;
@@ -259,6 +277,8 @@ namespace SimulatorEpidemic
             {
                 case HealthState.Healthy:
                     return Color.Green; // Здоровый - зеленый
+                case HealthState.Incubating:
+                    return Color.Pink; // Инкубационный период - розовый
                 case HealthState.Infected:
                     return Color.Red; // Инфицированный - красный
                 case HealthState.Recovered:
