@@ -25,6 +25,7 @@ namespace SimulatorEpidemic
         private int _screenWidth;        // Ширина экрана
         private int _screenHeight;       // Высота экрана
 
+        private float infectionRadius;   // Радиус заражения
 
         private float infectionChance;   // Вероятность заражения при столкновении
         private float incubationTime;    // Время инкубационного периода в секундах
@@ -44,7 +45,7 @@ namespace SimulatorEpidemic
 
 
         // Конструктор человека, инициализирующий его позицию, состояние здоровья и параметры движения
-        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval, float incubationTime)
+        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval, float incubationTime, float infectionRadius)
         {
             random = new Random();
             _screenWidth = screenWidth;
@@ -55,6 +56,7 @@ namespace SimulatorEpidemic
             this.deathChance = deathChance;
             this.deathCheckInterval = deathCheckInterval;
             this.incubationTime = incubationTime;
+            this.infectionRadius = infectionRadius;
             _position = new Vector2(random.Next((int)_radius, screenWidth - (int)_radius), random.Next((int)_radius, screenHeight - (int)_radius));
             _speed = 100f;
             _direction = GetRandomDirection();
@@ -87,6 +89,13 @@ namespace SimulatorEpidemic
         public void Draw(SpriteBatch spriteBatch, Texture2D texture)
         {
             Color color = GetHealthColor();
+
+            // Отрисовка зоны заражения
+            if (State == HealthState.Infected || State == HealthState.Incubating)
+            {
+                Texture2D circle = CreateCircleTexture(spriteBatch.GraphicsDevice, (int)infectionRadius * 2);
+                spriteBatch.Draw(circle, _position - new Vector2(infectionRadius, infectionRadius), Color.Red * 0.2f);
+            }
 
             // Отрисовка текстуры с соответствующим цветом на текущей позиции
             spriteBatch.Draw(
@@ -150,26 +159,31 @@ namespace SimulatorEpidemic
         // Метод для попытки заражения другого человека при столкновении
         public void TryInfect(Human other)
         {
-            // Проверяем, если текущий объект заражен, а другой человек здоров
-            if ((this.State == HealthState.Infected || this.State == HealthState.Incubating) && other.State == HealthState.Healthy)
+            // Проверяем, находится ли другой человек в радиусе заражения
+            if (Vector2.Distance(_position, other._position) < infectionRadius)
             {
-                // Генерируем случайное число и сравниваем его с вероятностью заражения
-                if (random.NextDouble() < infectionChance)
+                // Проверяем, если текущий объект заражен, а другой человек здоров
+                if ((this.State == HealthState.Infected || this.State == HealthState.Incubating) && other.State == HealthState.Healthy)
                 {
-                    // Если вероятность сработала, заражаем другого человека
-                    other.State = HealthState.Incubating;
-                    other.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
+                    // Генерируем случайное число и сравниваем его с вероятностью заражения
+                    if (random.NextDouble() < infectionChance)
+                    {
+                        // Если вероятность сработала, заражаем другого человека
+                        other.State = HealthState.Incubating;
+                        other.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
+                    }
                 }
-            }
-            // Проверяем, если текущий объект здоров, а другой человек заражен
-            else if (this.State == HealthState.Healthy && (other.State == HealthState.Infected || other.State == HealthState.Incubating))
-            {
-                // Генерируем случайное число и сравниваем его с вероятностью заражения
-                if (random.NextDouble() < infectionChance)
+
+                // Проверяем, если текущий объект здоров, а другой человек заражен
+                else if (this.State == HealthState.Healthy && (other.State == HealthState.Infected || other.State == HealthState.Incubating))
                 {
-                    // Если вероятность сработала, заражаем текущего человека
-                    this.State = HealthState.Incubating;
-                    this.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
+                    // Генерируем случайное число и сравниваем его с вероятностью заражения
+                    if (random.NextDouble() < infectionChance)
+                    {
+                        // Если вероятность сработала, заражаем текущего человека
+                        this.State = HealthState.Incubating;
+                        this.infectionTimer = 0f; // Сброс таймера заражения для нового зараженного
+                    }
                 }
             }
         }
@@ -288,6 +302,44 @@ namespace SimulatorEpidemic
                 default:
                     return Color.White; // Неизвестное состояние - белый
             }
+        }
+
+        // Метод для создания текстуры круга (опционально)
+        private Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int diameter)
+        {
+            // Создание новой текстуры с заданным диаметром
+            Texture2D texture = new Texture2D(graphicsDevice, diameter, diameter);
+            // Массив данных цветов для текстуры
+            Color[] colorData = new Color[diameter * diameter];
+            // Радиус круга
+            float radius = diameter / 2f;
+            // Квадрат радиуса для оптимизации вычислений
+            float radiussq = radius * radius;
+
+            // Заполнение данных цвета
+            for (int x = 0; x < diameter; x++)
+            {
+                for (int y = 0; y < diameter; y++)
+                {
+                    // Индекс текущего пикселя в массиве цветов
+                    int index = x * diameter + y;
+                    // Позиция текущего пикселя относительно центра круга
+                    Vector2 pos = new Vector2(x - radius, y - radius);
+                    // Проверка, находится ли текущий пиксель внутри круга
+                    if (pos.LengthSquared() <= radiussq)
+                    {
+                        colorData[index] = Color.White; // Пиксель внутри круга окрашивается в белый цвет
+                    }
+                    else
+                    {
+                        colorData[index] = Color.Transparent; // Пиксель вне круга делается прозрачным
+                    }
+                }
+            }
+
+            // Установка данных цветов в текстуру
+            texture.SetData(colorData);
+            return texture; // Возвращаем созданную текстуру
         }
     }
 }
