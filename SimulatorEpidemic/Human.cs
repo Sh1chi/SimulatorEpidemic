@@ -20,20 +20,25 @@ namespace SimulatorEpidemic
         private int _screenWidth;        // Ширина экрана
         private int _screenHeight;       // Высота экрана
         private float _radius;           // Радиус круга, представляющего человека
+        private float infectionChance;   // Вероятность заражения при столкновении
+        private float recoveryTime;      // Время выздоровления в секундах
+        private float infectionTimer;    // Таймер для отслеживания времени заражения
         private Random random;           // Объект для генерации случайных чисел
 
-        public HealthState State { get; private set; }  // Текущее состояние здоровья человека
+        public HealthState State { get; set; }  // Текущее состояние здоровья человека
 
         private float changeDirectionTimer;   // Таймер для изменения направления движения
         private float timeUntilNextChange;    // Время до следующего изменения направления
 
         // Конструктор человека, инициализирующий его позицию, состояние здоровья и параметры движения
-        public Human(int screenWidth, int screenHeight, float radius)
+        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime)
         {
             random = new Random();
             _screenWidth = screenWidth;
             _screenHeight = screenHeight;
             _radius = radius;
+            this.infectionChance = infectionChance;
+            this.recoveryTime = recoveryTime;
             _position = new Vector2(random.Next((int)_radius, screenWidth - (int)_radius), random.Next((int)_radius, screenHeight - (int)_radius));
             _speed = 100f;
             _direction = GetRandomDirection();
@@ -42,6 +47,7 @@ namespace SimulatorEpidemic
             ResetChangeDirectionTimer();
 
             State = HealthState.Healthy; // Начальное состояние - здоров
+            infectionTimer = 0f; // Инициализация таймера заражения
         }
 
         // Метод для обновления состояния человека
@@ -55,6 +61,9 @@ namespace SimulatorEpidemic
 
             // Обновление таймера для изменения направления движения
             UpdateDirectionTimer(gameTime);
+
+            // Обновление таймера заражения и проверка выздоровления
+            UpdateInfectionTimer(gameTime);
         }
 
         // Метод для отрисовки человека
@@ -117,6 +126,31 @@ namespace SimulatorEpidemic
             other._position -= separation;
         }
 
+        // Метод для попытки заражения другого человека при столкновении
+        public void TryInfect(Human other)
+        {
+            // Проверяем, если текущий объект заражен, а другой человек здоров
+            if (this.State == HealthState.Infected && other.State == HealthState.Healthy)
+            {
+                // Генерируем случайное число и сравниваем его с вероятностью заражения
+                if (random.NextDouble() < infectionChance)
+                {
+                    // Если вероятность сработала, заражаем другого человека
+                    other.State = HealthState.Infected;
+                }
+            }
+            // Проверяем, если текущий объект здоров, а другой человек заражен
+            else if (this.State == HealthState.Healthy && other.State == HealthState.Infected)
+            {
+                // Генерируем случайное число и сравниваем его с вероятностью заражения
+                if (random.NextDouble() < infectionChance)
+                {
+                    // Если вероятность сработала, заражаем текущего человека
+                    this.State = HealthState.Infected;
+                }
+            }
+        }
+
         // Метод для получения случайного направления движения
         private Vector2 GetRandomDirection()
         {
@@ -168,6 +202,24 @@ namespace SimulatorEpidemic
                 _direction.Y = -_direction.Y;
                 // Ограничиваем позицию так, чтобы объект оставался в пределах экрана
                 _position.Y = MathHelper.Clamp(_position.Y, _radius, _screenHeight - _radius);
+            }
+        }
+
+        // Обновление таймера заражения и проверка выздоровления
+        private void UpdateInfectionTimer(GameTime gameTime)
+        {
+            // Проверяем, если текущий объект находится в состоянии "инфицирован"
+            if (State == HealthState.Infected)
+            {
+                // Увеличиваем таймер заражения на время, прошедшее с момента последнего обновления
+                infectionTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                // Проверяем, если таймер достиг или превысил время выздоровления
+                if (infectionTimer >= recoveryTime)
+                {
+                    // Изменяем состояние на "выздоровевший"
+                    State = HealthState.Recovered;
+                }
             }
         }
 

@@ -15,6 +15,10 @@ namespace SimulatorEpidemic
         private Texture2D _humanTexture; // Текстура для отображения человека
         private Random random; // Объект для генерации случайных чисел
 
+        private const float InfectionChance = 0.2f; // Вероятность заражения при столкновении
+        private const float RecoveryTime = 10f; // Время выздоровления в секундах
+
+
         // Конструктор игры
         public Game1()
         {
@@ -42,7 +46,12 @@ namespace SimulatorEpidemic
             _humans = new List<Human>();
             for (int i = 0; i < 50; i++)
             {
-                _humans.Add(new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2));
+                var human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime);
+                if (i < 5) // Первоначально заражаем 5 человек
+                {
+                    human.State = Human.HealthState.Infected;
+                }
+                _humans.Add(human);
             }
         }
 
@@ -72,6 +81,9 @@ namespace SimulatorEpidemic
                     {
                         // Если столкновение произошло, обрабатываем его
                         human1.HandleCollision(human2);
+
+                        // Попытка заражения при столкновении
+                        human1.TryInfect(human2);
                     }
                 }
             }
