@@ -12,24 +12,36 @@ namespace SimulatorEpidemic
         private GraphicsDeviceManager _graphics; // Управляет графическими устройствами
         private SpriteBatch _spriteBatch; // Отвечает за пакетную отрисовку спрайтов
         private List<Human> _humans; // Список объектов человека в игре
-        private Texture2D _humanTexture; // Текстура для отображения человека
-        private Random random; // Объект для генерации случайных чисел
+        private Texture2D _humanTexture; // Текстура круга для отображения человека
+        private Texture2D _backgroundTexture; // Текстура фона для главного меню
+        private Random random;
 
         private const float InfectionChance = 0.2f; // Вероятность заражения при столкновении
+        private const float IncubationTime = 5f; // Время инкубационного периода в секундах
         private const float RecoveryTime = 10f; // Время выздоровления в секундах
         private const float DeathChance = 0.05f; // Вероятность смерти во время болезни
-        private const float DeathCheckInterval = 3f; // Интервал проверки шанса смерти в секундах
-        private const float IncubationPeriod = 5f; // Длительность инкубационного периода в секундах
-        private const float InfectionRadius = 25f;
+        private const float DeathCheckInterval = 3f; // Интервал проверки на смерть в секундах
+        private const float InfectionRadius = 25f; // Радиус заражения
 
+        private enum GameState
+        {
+            MainMenu,
+            Simulation
+        }
+
+        private GameState _currentState;
+        private MainMenu _mainMenu;
 
         // Конструктор игры
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
+            _graphics.PreferredBackBufferWidth = 1280;  // Устанавливаем ширину окна
+            _graphics.PreferredBackBufferHeight = 720; // Устанавливаем высоту окна
             Content.RootDirectory = "Content"; // Директория для контента
             IsMouseVisible = true; // Делает курсор мыши видимым
             random = new Random();
+            _currentState = GameState.MainMenu; // Начальное состояние - главное меню
         }
 
         // Инициализация игры
@@ -46,12 +58,17 @@ namespace SimulatorEpidemic
             // Загрузка текстуры человека
             _humanTexture = Content.Load<Texture2D>("Human");
 
+            // Загрузка текстуры фона
+            _backgroundTexture = Content.Load<Texture2D>("backgroundMenu");
+
+            // Инициализация главного меню
+            _mainMenu = new MainMenu(_backgroundTexture);
+
             // Инициализация списка людей
             _humans = new List<Human>();
             for (int i = 0; i < 50; i++)
             {
-                var human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationPeriod, InfectionRadius
-                    );
+                var human = new Human(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationTime, InfectionRadius);
                 if (i < 5) // Первоначально заражаем 5 человек
                 {
                     human.State = Human.HealthState.Infected;
@@ -67,6 +84,24 @@ namespace SimulatorEpidemic
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            switch (_currentState)
+            {
+                case GameState.MainMenu:
+                    if (_mainMenu.Update(gameTime))
+                    {
+                        _currentState = GameState.Simulation;
+                    }
+                    break;
+                case GameState.Simulation:
+                    UpdateSimulation(gameTime);
+                    break;
+            }
+
+            base.Update(gameTime);
+        }
+
+        private void UpdateSimulation(GameTime gameTime)
+        {
             // Обновление состояния каждого человека
             foreach (var human in _humans)
             {
@@ -90,10 +125,8 @@ namespace SimulatorEpidemic
                         // Если столкновение произошло, обрабатываем его
                         human1.HandleCollision(human2);
                     }
-
                 }
             }
-                base.Update(gameTime);
         }
 
         // Отрисовка игры
@@ -104,15 +137,28 @@ namespace SimulatorEpidemic
 
             // Начало пакетной отрисовки
             _spriteBatch.Begin();
-            // Отрисовка человека с использованием текстуры
-            foreach (var human in _humans)
+            switch (_currentState)
             {
-                human.Draw(_spriteBatch, _humanTexture);
+                case GameState.MainMenu:
+                    _mainMenu.Draw(_spriteBatch, GraphicsDevice);
+                    break;
+                case GameState.Simulation:
+                    DrawSimulation();
+                    break;
             }
             // Завершение пакетной отрисовки
             _spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawSimulation()
+        {
+            // Отрисовка человека с использованием текстуры
+            foreach (var human in _humans)
+            {
+                human.Draw(_spriteBatch, _humanTexture);
+            }
         }
     }
 }

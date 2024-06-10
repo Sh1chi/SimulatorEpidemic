@@ -258,10 +258,11 @@ namespace SimulatorEpidemic
                 {
                     // Если состояние инкубационное и таймер достиг времени инкубации, меняем состояние на "инфицирован"
                     State = HealthState.Infected;
+                    deathCheckTimer = 0f; // Сброс таймера проверки на смерть при переходе в состояние инфицирования
                 }
 
-                    // Проверяем, если таймер проверки на смерть достиг интервала проверки
-                    if (State == HealthState.Infected && deathCheckTimer >= deathCheckInterval)
+                // Проверяем, если таймер проверки на смерть достиг интервала проверки
+                if (State == HealthState.Infected && deathCheckTimer >= deathCheckInterval)
                 {
                     // Сбрасываем таймер проверки на смерть
                     deathCheckTimer = 0f;
