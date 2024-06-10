@@ -6,14 +6,15 @@ namespace SimulatorEpidemic
 {
     public class MainMenu
     {
-        private Texture2D _backgroundTexture;
-        private Rectangle _buttonRectangle;
+        private Texture2D _backgroundTexture; // Текстура фона главного меню
+        private Rectangle _buttonRectangle;  // Прямоугольник, представляющий кнопку
 
+        // Конструктор главного меню
         public MainMenu(Texture2D backgroundTexture)
         {
             _backgroundTexture = backgroundTexture;
 
-            // Координаты и размеры кнопки
+            // Задаем координаты и размеры кнопки
             int buttonWidth = 154;
             int buttonHeight = 43;
             int buttonX = 563; // Координата X кнопки на экране
@@ -21,17 +22,23 @@ namespace SimulatorEpidemic
             _buttonRectangle = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
         }
 
+        // Метод обновления состояния главного меню
         public bool Update(GameTime gameTime)
         {
+            // Получаем состояние мыши
             MouseState mouseState = Mouse.GetState();
+
+            // Проверяем, была ли нажата левая кнопка мыши и находится ли курсор на кнопке
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 _buttonRectangle.Contains(mouseState.Position))
             {
-                return true;
+                return true; // Возвращаем true, если кнопка была нажата
             }
-            return false;
+
+            return false; // Возвращаем false, если кнопка не была нажата
         }
 
+        // Метод отрисовки главного меню
         public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
         {
             // Отрисовка фона

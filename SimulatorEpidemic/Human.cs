@@ -57,7 +57,7 @@ namespace SimulatorEpidemic
             this.deathCheckInterval = deathCheckInterval;
             this.incubationTime = incubationTime;
             this.infectionRadius = infectionRadius;
-            _position = new Vector2(random.Next((int)_radius, screenWidth - (int)_radius), random.Next((int)_radius, screenHeight - (int)_radius));
+            _position = new Vector2(random.Next((int)_radius + 11, screenWidth + 9 - (int)_radius), random.Next((int)_radius + 11, screenHeight + 9 - (int)_radius));
             _speed = 100f;
             _direction = GetRandomDirection();
 
@@ -224,7 +224,7 @@ namespace SimulatorEpidemic
         private void CheckScreenCollision()
         {
             // Проверяем столкновение с левой или правой границей экрана
-            if (_position.X - _radius <= 0 || _position.X + _radius >= _screenWidth)
+            if (_position.X - _radius <= 13 || _position.X + _radius >= _screenWidth)
             {
                 // Меняем направление движения по оси X на противоположное
                 _direction.X = -_direction.X;
@@ -233,7 +233,7 @@ namespace SimulatorEpidemic
             }
 
             // Проверяем столкновение с верхней или нижней границей экрана
-            if (_position.Y - _radius <= 0 || _position.Y + _radius >= _screenHeight)
+            if (_position.Y - _radius <= 13 || _position.Y + _radius >= _screenHeight)
             {
                 // Меняем направление движения по оси Y на противоположное
                 _direction.Y = -_direction.Y;
