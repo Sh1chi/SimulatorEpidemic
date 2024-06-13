@@ -19,12 +19,26 @@ namespace SimulatorEpidemic
         private Texture2D _settingsAreaTexture; // Текстура для настроек
         private Random random;
 
-        private const float InfectionChance = 0.2f; // Вероятность заражения при столкновении
-        private const float IncubationTime = 5f; // Время инкубационного периода в секундах
-        private const float RecoveryTime = 10f; // Время выздоровления в секундах
-        private const float DeathChance = 0.05f; // Вероятность смерти во время болезни
-        private const float DeathCheckInterval = 3f; // Интервал проверки на смерть в секундах
-        private const float InfectionRadius = 25f; // Радиус заражения
+        // Поля для слайдеров
+        private Slider deathChanceSlider; // Слайдер для настройки вероятности смерти
+        private Slider infectionRadiusSlider; // Слайдер для настройки радиуса заражения
+        private Slider infectionChanceSlider; // Слайдер для настройки вероятности заражения
+        private Slider incubationTimeSlider; // Слайдер для настройки времени инкубации
+        private Slider recoveryTimeSlider; // Слайдер для настройки времени выздоровления
+
+        // Поля для текстур слайдера и ручки
+        private Texture2D sliderTexture; // Текстура для слайдера
+        private Texture2D knobTexture; // Текстура для ручки слайдера
+
+        // Поле для шрифта
+        private SpriteFont font_orbitiron; // Шрифт для отображения текста
+
+        private float InfectionChance = 0.2f; // Вероятность заражения при столкновении
+        private float IncubationTime = 5f; // Время инкубационного периода в секундах
+        private float RecoveryTime = 10f; // Время выздоровления в секундах
+        private float DeathChance = 0.05f; // Вероятность смерти во время болезни
+        private float DeathCheckInterval = 3f; // Интервал проверки на смерть в секундах
+        private float InfectionRadius = 25f; // Радиус заражения
 
         // Перечисление состояний игры
         private enum GameState
@@ -63,6 +77,30 @@ namespace SimulatorEpidemic
             _backgroundSimulationTexture = Content.Load<Texture2D>("backgroundSimulation"); // Загрузка текстуры фона Симуляции
             _simulationAreaTexture = Content.Load<Texture2D>("SimulationArea");     // Загрузка текстуры области симуляции
             _settingsAreaTexture = Content.Load<Texture2D>("SettingsArea");     // Загрузка текстуры области настроек
+
+            // Загрузка текстур слайдера и ручки слайдера
+            sliderTexture = Content.Load<Texture2D>("sliderTexture");
+            knobTexture = Content.Load<Texture2D>("knobTexture");
+
+            // Загрузка шрифта для отображения текста
+            font_orbitiron = Content.Load<SpriteFont>("orbitiron");
+
+            // Инициализация слайдера для вероятности смерти
+            // Параметры: текстура слайдера, текстура ручки, позиция на экране, минимальное значение, максимальное значение, начальное значение, шрифт, подпись
+            deathChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 100), 0.0f, 1f, DeathChance, font_orbitiron, "Death Chance");
+
+            // Инициализация слайдера для радиуса заражения
+            infectionRadiusSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 200), 20f, 50f, InfectionRadius, font_orbitiron, "Infection Radius");
+
+            // Инициализация слайдера для вероятности заражения
+            infectionChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 300), 0.0f, 1f, InfectionChance, font_orbitiron, "Infection Chance");
+
+            // Инициализация слайдера для времени инкубации
+            incubationTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 400), 0f, 15f, IncubationTime, font_orbitiron, "Incubation Time");
+
+            // Инициализация слайдера для времени выздоровления
+            recoveryTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 500), 0f, 15f, RecoveryTime, font_orbitiron, "Recovery Time");
+
 
             // Инициализация главного меню
             _mainMenu = new MainMenu(_backgroundMenuTexture);
@@ -110,10 +148,31 @@ namespace SimulatorEpidemic
         // Метод для обновления логики симуляции
         private void UpdateSimulation(GameTime gameTime)
         {
+            // Обновление состояния слайдеров и сохранение значения
+            deathChanceSlider.Update(gameTime);
+            DeathChance = deathChanceSlider.Value;
+
+            infectionRadiusSlider.Update(gameTime);
+            InfectionRadius = infectionRadiusSlider.Value;
+
+            infectionChanceSlider.Update(gameTime);
+            InfectionChance = infectionChanceSlider.Value;
+
+            incubationTimeSlider.Update(gameTime);
+            IncubationTime = incubationTimeSlider.Value;
+
+            recoveryTimeSlider.Update(gameTime);
+            RecoveryTime = recoveryTimeSlider.Value;
+
             // Обновление состояния каждого человека
             foreach (var human in _humans)
             {
                 human.Update(gameTime);
+                human.deathChance = DeathChance;
+                human.infectionRadius = InfectionRadius;
+                human.infectionChance = InfectionChance;
+                human.incubationTime = IncubationTime;
+                human.recoveryTime = RecoveryTime;
             }
 
             // Проверка и обработка столкновений между людьми
@@ -178,6 +237,14 @@ namespace SimulatorEpidemic
 
             // Отрисовка фона настроек
             spriteBatch.Draw(_settingsAreaTexture, new Rectangle(1010, 10, _settingsAreaTexture.Width, _settingsAreaTexture.Height), Color.White);
+
+            // Отрисовка слайдеров
+            deathChanceSlider.Draw(spriteBatch);
+            deathChanceSlider.Draw(spriteBatch);
+            infectionRadiusSlider.Draw(spriteBatch);
+            infectionChanceSlider.Draw(spriteBatch);
+            incubationTimeSlider.Draw(spriteBatch);
+            recoveryTimeSlider.Draw(spriteBatch);
 
             // Отрисовка людей в основной области
             foreach (var human in _humans)

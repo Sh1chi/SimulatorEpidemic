@@ -25,14 +25,14 @@ namespace SimulatorEpidemic
         private int _screenWidth;        // Ширина экрана
         private int _screenHeight;       // Высота экрана
 
-        private float infectionRadius;   // Радиус заражения
+        public float infectionRadius;   // Радиус заражения
+        public float infectionChance;   // Вероятность заражения при столкновении
+        public float incubationTime;    // Время инкубационного периода в секундах
+        public float recoveryTime;      // Время выздоровления в секундах
+        public float deathChance;      // Вероятность смерти во время болезни
 
-        private float infectionChance;   // Вероятность заражения при столкновении
-        private float incubationTime;    // Время инкубационного периода в секундах
-        private float recoveryTime;      // Время выздоровления в секундах
         private float infectionTimer;    // Таймер для отслеживания времени заражения
 
-        private float deathChance;       // Вероятность смерти во время болезни
         private float deathCheckInterval; // Интервал проверки на смерть в секунда
 
         private float deathCheckTimer;   // Таймер для отслеживания времени до следующей проверки на смерть

@@ -61,6 +61,28 @@
 /processorParam:TextureFormat=Color
 /build:Human.png
 
+#begin knobTexture.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:knobTexture.png
+
+#begin orbitiron.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:orbitiron.spritefont
+
+#begin Orbitron.ttf
+/copy:Orbitron.ttf
+
 #begin SettingsArea.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -84,4 +106,16 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:SimulationArea.png
+
+#begin sliderTexture.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:sliderTexture.png
 
