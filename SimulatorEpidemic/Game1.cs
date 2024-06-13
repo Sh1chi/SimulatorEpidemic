@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SimulatorEpidemic
 {
@@ -39,6 +40,10 @@ namespace SimulatorEpidemic
         private float DeathChance = 0.05f; // Вероятность смерти во время болезни
         private float DeathCheckInterval = 3f; // Интервал проверки на смерть в секундах
         private float InfectionRadius = 25f; // Радиус заражения
+
+        private int humanCount = 50; // Общее количество людей
+
+        private EpidemicGraph _epidemicGraph;
 
         // Перечисление состояний игры
         private enum GameState
@@ -87,19 +92,23 @@ namespace SimulatorEpidemic
 
             // Инициализация слайдера для вероятности смерти
             // Параметры: текстура слайдера, текстура ручки, позиция на экране, минимальное значение, максимальное значение, начальное значение, шрифт, подпись
-            deathChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 100), 0.0f, 1f, DeathChance, font_orbitiron, "Death Chance");
+            deathChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 50), 0.0f, 1f, DeathChance, font_orbitiron, "Death Chance");
 
             // Инициализация слайдера для радиуса заражения
-            infectionRadiusSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 200), 20f, 50f, InfectionRadius, font_orbitiron, "Infection Radius");
+            infectionRadiusSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 150), 20f, 50f, InfectionRadius, font_orbitiron, "Infection Radius");
 
             // Инициализация слайдера для вероятности заражения
-            infectionChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 300), 0.0f, 1f, InfectionChance, font_orbitiron, "Infection Chance");
+            infectionChanceSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 250), 0.0f, 1f, InfectionChance, font_orbitiron, "Infection Chance");
 
             // Инициализация слайдера для времени инкубации
-            incubationTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 400), 0f, 15f, IncubationTime, font_orbitiron, "Incubation Time");
+            incubationTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 350), 0f, 15f, IncubationTime, font_orbitiron, "Incubation Time");
 
             // Инициализация слайдера для времени выздоровления
-            recoveryTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 500), 0f, 15f, RecoveryTime, font_orbitiron, "Recovery Time");
+            recoveryTimeSlider = new Slider(sliderTexture, knobTexture, new Vector2(1040, 450), 0f, 15f, RecoveryTime, font_orbitiron, "Recovery Time");
+
+            // Инициализация графика
+            _epidemicGraph = new EpidemicGraph(GraphicsDevice, new Vector2(1010, 610), new Vector2(260, 100), humanCount);
+
 
 
             // Инициализация главного меню
@@ -107,7 +116,7 @@ namespace SimulatorEpidemic
 
             // Инициализация списка людей
             _humans = new List<Human>();
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < humanCount; i++)
             {
                 var human = new Human(_simulationAreaTexture.Width + 10, _simulationAreaTexture.Height + 10, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationTime, InfectionRadius);
                 if (i < 5) // Первоначально заражаем 5 человек
@@ -148,6 +157,16 @@ namespace SimulatorEpidemic
         // Метод для обновления логики симуляции
         private void UpdateSimulation(GameTime gameTime)
         {
+
+            // Подсчет количества здоровых, зараженных и выздоровевших людей
+            int healthyCount = _humans.Count(h => h.State == Human.HealthState.Healthy);  // Подсчитываем количество здоровых людей
+            int infectedCount = _humans.Count(h => h.State == Human.HealthState.Infected);  // Подсчитываем количество зараженных людей
+            int recoveredCount = _humans.Count(h => h.State == Human.HealthState.Recovered);  // Подсчитываем количество выздоровевших людей
+
+            // Добавление новых данных в график эпидемии
+            _epidemicGraph.AddDataPoints(healthyCount, infectedCount, recoveredCount);  // Передаем количество здоровых, зараженных и выздоровевших людей в график
+
+
             // Обновление состояния слайдеров и сохранение значения
             deathChanceSlider.Update(gameTime);
             DeathChance = deathChanceSlider.Value;
@@ -251,6 +270,17 @@ namespace SimulatorEpidemic
             {
                 human.Draw(_spriteBatch, _humanTexture);
             }
+
+            // Отрисовка графика
+            _epidemicGraph.Draw(_spriteBatch);
+
+
+            // Отрисовка количества выздоровевших, здоровых и больных людей
+            spriteBatch.DrawString(font_orbitiron, "Recovered: " + _humans.Count(h => h.State == Human.HealthState.Recovered), new Vector2(1020, 520), Color.Black);
+            spriteBatch.DrawString(font_orbitiron, "Healthy: " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(1020, 550), Color.Black);
+            spriteBatch.DrawString(font_orbitiron, "Infected: " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(1020, 580), Color.Black);
+
+
         }
     }
 }
