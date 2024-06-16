@@ -1,29 +1,39 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace SimulatorEpidemic
 {
-    public class MainMenu
+    // Класс главного меню, реализующий интерфейс IScreen
+    public class MainMenu : IScreen
     {
-        private Texture2D _backgroundTexture; // Текстура фона главного меню
-        private Rectangle _buttonRectangle;  // Прямоугольник, представляющий кнопку
+        private Texture2D _backgroundMenuTexture; // Текстура фона главного меню
+        private Rectangle _buttonRectangle; // Прямоугольник, представляющий кнопку
+        private ContentManager _content; // Менеджер контента для загрузки ресурсов
 
         // Конструктор главного меню
-        public MainMenu(Texture2D backgroundTexture)
+        public MainMenu(ContentManager content)
         {
-            _backgroundTexture = backgroundTexture;
+            _content = content;
+        }
 
+        // Метод инициализации
+        public void Initialize()
+        {
             // Задаем координаты и размеры кнопки
-            int buttonWidth = 154;
-            int buttonHeight = 43;
-            int buttonX = 563; // Координата X кнопки на экране
-            int buttonY = 613; // Координата Y кнопки на экране
-            _buttonRectangle = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+            _buttonRectangle = new Rectangle(563, 613, 154, 43);
+        }
+
+        // Метод загрузки контента
+        public void LoadContent()
+        {
+            // Загрузка текстуры фона главного меню
+            _backgroundMenuTexture = _content.Load<Texture2D>("backgroundMenu");
         }
 
         // Метод обновления состояния главного меню
-        public bool Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             // Получаем состояние мыши
             MouseState mouseState = Mouse.GetState();
@@ -32,17 +42,16 @@ namespace SimulatorEpidemic
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 _buttonRectangle.Contains(mouseState.Position))
             {
-                return true; // Возвращаем true, если кнопка была нажата
+                // Изменение экрана на симулятор эпидемии
+                GameStateManager.Instance.ChangeScreen("EpidemicSimulator");
             }
-
-            return false; // Возвращаем false, если кнопка не была нажата
         }
 
         // Метод отрисовки главного меню
-        public void Draw(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            // Отрисовка фона
-            spriteBatch.Draw(_backgroundTexture, new Rectangle(0, 0, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height), Color.White);
+            // Отрисовка фона главного меню
+            spriteBatch.Draw(_backgroundMenuTexture, new Rectangle(0, 0, spriteBatch.GraphicsDevice.Viewport.Width, spriteBatch.GraphicsDevice.Viewport.Height), Color.White);
         }
     }
 }
