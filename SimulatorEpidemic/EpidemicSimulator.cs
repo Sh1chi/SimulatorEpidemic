@@ -15,16 +15,19 @@ namespace SimulatorEpidemic
         private Texture2D _simulationAreaTexture; // Текстура области симуляции
         private Texture2D _settingsAreaTexture; // Текстура области настроек
         private Texture2D _backgroundSimulationTexture; // Текстура фона симуляции
-        private Texture2D _buttonBackTexture;
-        private Texture2D _buttonRetryTexture;
-        private Texture2D _buttonStartTexture;
-        private Texture2D _buttonAreaTexture;
-        private Texture2D _graphAreaTexture;
-        private Texture2D _healthStatusAreaTexture;
-        private Texture2D _nameAreaTexture;
-        private Texture2D _newsAreaTexture;
-        private Texture2D _videoAreaTexture;
+        private Texture2D _buttonBackTexture; // Текстура для кнопки "Назад"
+        private Texture2D _buttonRetryTexture; // Текстура для кнопки "Повторить"
+        private Texture2D _buttonStartTexture; // Текстура для кнопки "Начать"
+        private Texture2D _buttonAreaTexture; // Текстура для области кнопок
+        private Texture2D _graphAreaTexture; // Текстура для области графика
+        private Texture2D _healthStatusAreaTexture; // Текстура для области статуса здоровья
+        private Texture2D _nameAreaTexture; // Текстура для области имени
+        private Texture2D _newsAreaTexture; // Текстура для области новостей
+        private Texture2D _videoAreaTexture; // Текстура для области видео
         private Random random; // Генератор случайных чисел
+
+        private NewsManager _newsManager; // Объект для управления новостями
+        private string[] newsArray; // Массив строк для хранения новостных сообщений
 
         // Поля для слайдеров
         private Slider deathChanceSlider;
@@ -102,23 +105,64 @@ namespace SimulatorEpidemic
             _settingsAreaTexture = _content.Load<Texture2D>("SettingsArea"); // Загрузка текстуры области настроек
             _humanTexture = _content.Load<Texture2D>("Human"); // Загрузка текстуры человека
             font_orbitiron = _content.Load<SpriteFont>("orbitiron"); // Загрузка шрифта
-            _buttonBackTexture = _content.Load<Texture2D>("button_BACK");
-            _buttonRetryTexture = _content.Load<Texture2D>("button_RETRY");
-            _buttonStartTexture = _content.Load<Texture2D>("button_START_2");
-            _buttonAreaTexture = _content.Load<Texture2D>("ButtonArea");
-            _graphAreaTexture = _content.Load<Texture2D>("GraphArea");
-            _healthStatusAreaTexture = _content.Load<Texture2D>("health_status_area");
-            _nameAreaTexture = _content.Load<Texture2D>("NameArea");
-            _newsAreaTexture = _content.Load<Texture2D>("NewsArea");
-            _videoAreaTexture = _content.Load<Texture2D>("VideoArea");
+            _buttonBackTexture = _content.Load<Texture2D>("button_BACK"); // Загрузка текстуры для кнопки "Назад"
+            _buttonRetryTexture = _content.Load<Texture2D>("button_RETRY"); // Загрузка текстуры для кнопки "Повторить"
+            _buttonStartTexture = _content.Load<Texture2D>("button_START_2"); // Загрузка текстуры для кнопки "Начать"
+            _buttonAreaTexture = _content.Load<Texture2D>("ButtonArea"); // Загрузка текстуры для области кнопок
+            _graphAreaTexture = _content.Load<Texture2D>("GraphArea"); // Загрузка текстуры для области графика
+            _healthStatusAreaTexture = _content.Load<Texture2D>("health_status_area"); // Загрузка текстуры для области статуса здоровья
+            _nameAreaTexture = _content.Load<Texture2D>("NameArea"); // Загрузка текстуры для области имени
+            _newsAreaTexture = _content.Load<Texture2D>("NewsArea"); // Загрузка текстуры для области новостей
+            _videoAreaTexture = _content.Load<Texture2D>("VideoArea"); // Загрузка текстуры для области видео
 
-            _sliderTexture = _content.Load<Texture2D>("sliderTexture");
-            _knobTexture = _content.Load<Texture2D>("knobTexture");
+            // Загрузка текстур для слайдеров
+            _sliderTexture = _content.Load<Texture2D>("sliderTexture"); // Загрузка текстуры для слайдера
+            _knobTexture = _content.Load<Texture2D>("knobTexture"); // Загрузка текстуры для ручки слайдера
 
             // Инициализация после загрузки контента
             InitializeHumans();
             InitializeSliders();
             InitializeGraph();
+
+            LoadNews(); // Загрузка новостей
+            _newsManager = new NewsManager(newsArray, 5); // обновление новостей каждые 5 секунд
+        }
+
+        // Метод для загрузки новостей
+        private void LoadNews()
+        {
+            newsArray = new string[]
+            {
+            "// \"NEW VACCINE SHOWS 90% EFFECTIVENESS IN CLINICAL TRIALS\"\n\n" +
+            "Leading scientists state that this vaccine could be the key to ending the pandemic. Mass production is set to begin in the coming months.",
+
+                "// \"VIRUS SPREADS TO FIVE NEW COUNTRIES IN THE LAST 24 HOURS\"\n\n" +
+            "The World Health Organization warns of the need to strengthen safety measures. Local authorities are introducing additional restrictions.",
+
+                "// \"SCIENTISTS DISCOVER A NEW VIRUS STRAIN WITH INCREASED TRANSMISSIBILITY\"\n\n" +
+                "The new strain spreads faster and requires further research. Efforts are underway to develop updated vaccines.",
+
+                "// \"GOVERNMENT ANNOUNCES STRICT LOCKDOWN IN THE CAPITAL\"\n\n" +
+            "The restrictive measures include closing schools and public places. Residents are advised to stay home and avoid unnecessary travel.",
+
+                "// \"INTERNATIONAL FLIGHTS SUSPENDED DUE TO GLOBAL PANDEMIC\"\n\n" +
+            "Airlines are canceling thousands of flights to prevent further spread of the virus. Passengers are facing mass delays and cancellations.",
+
+                "// \"NEW ANTIVIRAL DRUG DEVELOPED, SPEEDING UP RECOVERY\"\n\n" +
+            "The drug has already shown positive results in early trials. Mass production is expected to begin soon.",
+
+                "// \"COUNTRY'S ECONOMY SUFFERS FROM PANDEMIC IMPACTS, UNEMPLOYMENT RATE RISES\"\n\n" +
+            "The government is developing support measures for affected sectors. Economists predict a slow recovery.",
+
+                "// \"MEDICAL FACILITIES OVERWHELMED, SHORTAGE OF EQUIPMENT AND STAFF\"\n\n" +
+            "Doctors are working overtime to cope with the influx of patients. Volunteers and reservists are being called in to help.",
+
+                "// \"MASS VACCINATION CAMPAIGN LAUNCHED\"\n\n" +
+            "Vaccinations are being carried out at specially organized centers and mobile units. Residents are urged to sign up for vaccinations in advance.",
+
+                "// \"INFECTION OUTBREAK IN NEIGHBORING COUNTRY RAISES CONCERNS AMONG AUTHORITIES\"\n\n" +
+            "Border controls are being tightened to prevent the virus from spreading. Medical services are on high alert."
+            };
         }
 
         // Обновление логики симуляции
@@ -222,6 +266,11 @@ namespace SimulatorEpidemic
             spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(492, 844), Color.White);
             spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(770, 844), Color.White);
             spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Dead), new Vector2(1056, 844), Color.White);
+
+
+            string currentNews = _newsManager.GetCurrentNews(gameTime); // Получение текущей новости
+            string wrappedNews = _newsManager.WrapText(currentNews, font_orbitiron, _newsAreaTexture.Width - 40); // Перенос текста
+            spriteBatch.DrawString(font_orbitiron, wrappedNews, new Vector2(1250, 850), Color.White); // Отображение текста
         }
     }
 }

@@ -145,6 +145,12 @@
 /processorParam:TextureFormat=Color
 /build:knobTexture.png
 
+#begin MainSong.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:MainSong.mp3
+
 #begin NameArea.png
 /importer:TextureImporter
 /processor:TextureProcessor
