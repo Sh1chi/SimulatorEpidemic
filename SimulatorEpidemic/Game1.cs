@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace SimulatorEpidemic
 {
@@ -10,6 +11,8 @@ namespace SimulatorEpidemic
         private GraphicsDeviceManager _graphics; // Управляет графическими устройствами
         private SpriteBatch _spriteBatch; // Отвечает за пакетную отрисовку спрайтов
         private GameStateManager _gameStateManager; // Менеджер состояний игры
+
+        Song song;
 
         // Конструктор игры
         public Game1()
@@ -40,6 +43,14 @@ namespace SimulatorEpidemic
             _spriteBatch = new SpriteBatch(GraphicsDevice); // Создаем объект SpriteBatch
 
             _gameStateManager.LoadContent(); // Загрузка контента для менеджера состояний
+
+
+            // Загружаем ранее добавленный ресурс audio1
+            song = Content.Load<Song>("MainSong");
+            // Начинаем проигрывание мелодии
+            MediaPlayer.Play(song);
+            // Повторять после завершения
+            MediaPlayer.IsRepeating = true;
         }
 
         // Обновление логики игры
