@@ -11,7 +11,7 @@ namespace SimulatorEpidemic
         // Списки точек данных для каждого состояния здоровья
         private List<Vector2> _healthyPoints;
         private List<Vector2> _infectedPoints;
-        private List<Vector2> _recoveredPoints;
+        private List<Vector2> _diedPoints;
         // Время для оси X
         private float _time;
         // Позиция и размер графика
@@ -32,7 +32,7 @@ namespace SimulatorEpidemic
             // Инициализация списков точек данных
             _healthyPoints = new List<Vector2>();
             _infectedPoints = new List<Vector2>();
-            _recoveredPoints = new List<Vector2>();
+            _diedPoints = new List<Vector2>();
             _time = 0f;
             _position = position;
             _size = size;
@@ -41,27 +41,27 @@ namespace SimulatorEpidemic
         }
 
         // Метод для добавления новых точек данных
-        public void AddDataPoints(int healthy, int infected, int recovered)
+        public void AddDataPoints(int healthy, int infected, int died)
         {
             _time += 1f; // Увеличиваем время для оси X
 
             // Добавляем новые точки данных для каждого состояния
             _healthyPoints.Add(new Vector2(_time, healthy));
             _infectedPoints.Add(new Vector2(_time, infected));
-            _recoveredPoints.Add(new Vector2(_time, recovered));
+            _diedPoints.Add(new Vector2(_time, died));
 
             // Удаляем старые точки данных, если их количество превышает максимальное
             if (_healthyPoints.Count > _maxDataPoints)
             {
                 _healthyPoints.RemoveAt(0);
                 _infectedPoints.RemoveAt(0);
-                _recoveredPoints.RemoveAt(0);
+                _diedPoints.RemoveAt(0);
                 // Обновляем X координаты оставшихся точек
                 for (int i = 0; i < _healthyPoints.Count; i++)
                 {
                     _healthyPoints[i] = new Vector2(i, _healthyPoints[i].Y);
                     _infectedPoints[i] = new Vector2(i, _infectedPoints[i].Y);
-                    _recoveredPoints[i] = new Vector2(i, _recoveredPoints[i].Y);
+                    _diedPoints[i] = new Vector2(i, _diedPoints[i].Y);
                 }
             }
         }
@@ -79,7 +79,7 @@ namespace SimulatorEpidemic
             // Отрисовка областей для каждого состояния здоровья
             DrawArea(spriteBatch, _healthyPoints, Color.Green);
             DrawArea(spriteBatch, _infectedPoints, Color.Red);
-            DrawArea(spriteBatch, _recoveredPoints, Color.Blue);
+            DrawArea(spriteBatch, _diedPoints, Color.Gray);
         }
 
         // Метод для отрисовки области графика

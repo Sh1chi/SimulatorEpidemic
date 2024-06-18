@@ -57,7 +57,13 @@ namespace SimulatorEpidemic
             this.deathCheckInterval = deathCheckInterval;
             this.incubationTime = incubationTime;
             this.infectionRadius = infectionRadius;
-            _position = new Vector2(random.Next((int)_radius + 11, screenWidth + 9 - (int)_radius), random.Next((int)_radius + 11, screenHeight + 9 - (int)_radius));
+
+            // Учитываем смещение области симуляции
+            int offsetX = 10;
+            int offsetY = 90;
+            _position = new Vector2(random.Next((int)_radius + offsetX + 1, screenWidth + offsetX - (int)_radius),
+                                    random.Next((int)_radius + offsetY + 1, screenHeight + offsetY - (int)_radius));
+            
             _speed = 100f;
             _direction = GetRandomDirection();
 
@@ -223,22 +229,25 @@ namespace SimulatorEpidemic
         // Проверка столкновения с границами экрана и изменение направления при необходимости
         private void CheckScreenCollision()
         {
+            int offsetX = 10;
+            int offsetY = 90;
+
             // Проверяем столкновение с левой или правой границей экрана
-            if (_position.X - _radius <= 13 || _position.X + _radius >= _screenWidth)
+            if (_position.X - _radius <= offsetX || _position.X + _radius >= _screenWidth + offsetX)
             {
                 // Меняем направление движения по оси X на противоположное
                 _direction.X = -_direction.X;
                 // Ограничиваем позицию так, чтобы объект оставался в пределах экрана
-                _position.X = MathHelper.Clamp(_position.X, _radius, _screenWidth - _radius);
+                _position.X = MathHelper.Clamp(_position.X, _radius + offsetX, _screenWidth + offsetX - _radius);
             }
 
             // Проверяем столкновение с верхней или нижней границей экрана
-            if (_position.Y - _radius <= 13 || _position.Y + _radius >= _screenHeight)
+            if (_position.Y - _radius <= offsetY || _position.Y + _radius >= _screenHeight + offsetY)
             {
                 // Меняем направление движения по оси Y на противоположное
                 _direction.Y = -_direction.Y;
                 // Ограничиваем позицию так, чтобы объект оставался в пределах экрана
-                _position.Y = MathHelper.Clamp(_position.Y, _radius, _screenHeight - _radius);
+                _position.Y = MathHelper.Clamp(_position.Y, _radius + offsetY, _screenHeight + offsetY - _radius);
             }
         }
 

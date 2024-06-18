@@ -15,8 +15,9 @@ namespace SimulatorEpidemic
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
-            _graphics.PreferredBackBufferWidth = 1280;  // Устанавливаем ширину окна
-            _graphics.PreferredBackBufferHeight = 720; // Устанавливаем высоту окна
+            _graphics.PreferredBackBufferWidth = 1920;  // Устанавливаем ширину окна
+            _graphics.PreferredBackBufferHeight = 1080; // Устанавливаем высоту окна
+            _graphics.IsFullScreen = true;  // Включаем полноэкранный режим
             Content.RootDirectory = "Content"; // Директория для контента
             IsMouseVisible = true; // Делает курсор мыши видимым
         }

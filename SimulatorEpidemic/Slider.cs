@@ -109,11 +109,11 @@ public class Slider
         string valueText = currentValue.ToString("F2"); // Преобразование текущего значения в строку с двумя знаками после запятой
         Vector2 textSize = font.MeasureString(valueText); // Измерение размера текста
         Vector2 textPosition = new Vector2(knobRectangle.X + knobRectangle.Width / 2 - textSize.X / 2, knobRectangle.Y + knobRectangle.Height); // Позиция текста под ручкой
-        spriteBatch.DrawString(font, valueText, textPosition, Color.Black); // Отрисовка текста
+        spriteBatch.DrawString(font, valueText, textPosition, Color.White); // Отрисовка текста
 
         // Отрисовка названия ползунка над ползунком
         Vector2 nameSize = font.MeasureString(sliderName); // Измерение размера текста названия
         Vector2 namePosition = new Vector2(sliderRectangle.X + sliderRectangle.Width / 2 - nameSize.X / 2, sliderRectangle.Y - nameSize.Y - 7); // Позиция текста названия над ползунком
-        spriteBatch.DrawString(font, sliderName, namePosition, Color.Black); // Отрисовка текста названия
+        spriteBatch.DrawString(font, sliderName, namePosition, Color.White); // Отрисовка текста названия
     }
 }

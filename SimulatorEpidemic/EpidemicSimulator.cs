@@ -15,6 +15,15 @@ namespace SimulatorEpidemic
         private Texture2D _simulationAreaTexture; // Текстура области симуляции
         private Texture2D _settingsAreaTexture; // Текстура области настроек
         private Texture2D _backgroundSimulationTexture; // Текстура фона симуляции
+        private Texture2D _buttonBackTexture;
+        private Texture2D _buttonRetryTexture;
+        private Texture2D _buttonStartTexture;
+        private Texture2D _buttonAreaTexture;
+        private Texture2D _graphAreaTexture;
+        private Texture2D _healthStatusAreaTexture;
+        private Texture2D _nameAreaTexture;
+        private Texture2D _newsAreaTexture;
+        private Texture2D _videoAreaTexture;
         private Random random; // Генератор случайных чисел
 
         // Поля для слайдеров
@@ -23,6 +32,8 @@ namespace SimulatorEpidemic
         private Slider infectionChanceSlider;
         private Slider incubationTimeSlider;
         private Slider recoveryTimeSlider;
+        private Texture2D _sliderTexture; // Текстуры для слайдеров
+        private Texture2D _knobTexture; // Текстуры для слайдеров
 
         // Параметры симуляции
         private float InfectionChance = 0.2f;
@@ -35,9 +46,6 @@ namespace SimulatorEpidemic
         private int humanCount = 50; // Общее количество людей в симуляции
         private EpidemicGraph _epidemicGraph; // График эпидемии
         private SpriteFont font_orbitiron; // Шрифт для отображения текста
-
-        private Texture2D _sliderTexture; // Текстуры для слайдеров
-        private Texture2D _knobTexture; // Текстуры для слайдеров
 
         private GraphicsDevice _graphicsDevice; // Графическое устройство
         private ContentManager _content; // Менеджер контента
@@ -58,11 +66,11 @@ namespace SimulatorEpidemic
         // Инициализация слайдеров
         private void InitializeSliders()
         {
-            deathChanceSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1040, 50), 0.0f, 1f, DeathChance, font_orbitiron, "Death Chance");
-            infectionRadiusSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1040, 150), 20f, 50f, InfectionRadius, font_orbitiron, "Infection Radius");
-            infectionChanceSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1040, 250), 0.0f, 1f, InfectionChance, font_orbitiron, "Infection Chance");
-            incubationTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1040, 350), 0f, 15f, IncubationTime, font_orbitiron, "Incubation Time");
-            recoveryTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1040, 450), 0f, 15f, RecoveryTime, font_orbitiron, "Recovery Time");
+            deathChanceSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1300, 450), 0.0f, 1f, DeathChance, font_orbitiron, "Death Chance");
+            infectionRadiusSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1300, 550), 20f, 50f, InfectionRadius, font_orbitiron, "Infection Radius");
+            infectionChanceSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1300, 650), 0.0f, 1f, InfectionChance, font_orbitiron, "Infection Chance");
+            incubationTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 450), 0f, 15f, IncubationTime, font_orbitiron, "Incubation Time");
+            recoveryTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 550), 0f, 15f, RecoveryTime, font_orbitiron, "Recovery Time");
         }
 
         // Инициализация людей
@@ -71,7 +79,7 @@ namespace SimulatorEpidemic
             _humans = new List<Human>();
             for (int i = 0; i < humanCount; i++)
             {
-                var human = new Human(_simulationAreaTexture.Width + 10, _simulationAreaTexture.Height + 10, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationTime, InfectionRadius);
+                var human = new Human(_simulationAreaTexture.Width, _simulationAreaTexture.Height, _humanTexture.Width / 2, InfectionChance, RecoveryTime, DeathChance, DeathCheckInterval, IncubationTime, InfectionRadius);
                 if (i < 5) // Первоначально заражаем 5 человек
                 {
                     human.State = Human.HealthState.Infected;
@@ -83,7 +91,7 @@ namespace SimulatorEpidemic
         // Инициализация графика эпидемии
         public void InitializeGraph()
         {
-            _epidemicGraph = new EpidemicGraph(_graphicsDevice, new Vector2(1010, 610), new Vector2(260, 100), humanCount);
+            _epidemicGraph = new EpidemicGraph(_graphicsDevice, new Vector2(20, 914), new Vector2(1180, 146), humanCount);
         }
 
         // Метод для инициализации слайдеров и графика
@@ -94,6 +102,15 @@ namespace SimulatorEpidemic
             _settingsAreaTexture = _content.Load<Texture2D>("SettingsArea"); // Загрузка текстуры области настроек
             _humanTexture = _content.Load<Texture2D>("Human"); // Загрузка текстуры человека
             font_orbitiron = _content.Load<SpriteFont>("orbitiron"); // Загрузка шрифта
+            _buttonBackTexture = _content.Load<Texture2D>("button_BACK");
+            _buttonRetryTexture = _content.Load<Texture2D>("button_RETRY");
+            _buttonStartTexture = _content.Load<Texture2D>("button_START_2");
+            _buttonAreaTexture = _content.Load<Texture2D>("ButtonArea");
+            _graphAreaTexture = _content.Load<Texture2D>("GraphArea");
+            _healthStatusAreaTexture = _content.Load<Texture2D>("health_status_area");
+            _nameAreaTexture = _content.Load<Texture2D>("NameArea");
+            _newsAreaTexture = _content.Load<Texture2D>("NewsArea");
+            _videoAreaTexture = _content.Load<Texture2D>("VideoArea");
 
             _sliderTexture = _content.Load<Texture2D>("sliderTexture");
             _knobTexture = _content.Load<Texture2D>("knobTexture");
@@ -168,12 +185,22 @@ namespace SimulatorEpidemic
         {
             // Отрисовка фона
             spriteBatch.Draw(_backgroundSimulationTexture, new Rectangle(0, 0, _backgroundSimulationTexture.Width, _backgroundSimulationTexture.Height), Color.White);
-
             // Отрисовка области симуляции
-            spriteBatch.Draw(_simulationAreaTexture, new Rectangle(10, 10, _simulationAreaTexture.Width, _simulationAreaTexture.Height), Color.White);
-
+            spriteBatch.Draw(_simulationAreaTexture, new Rectangle(10, 90, _simulationAreaTexture.Width, _simulationAreaTexture.Height), Color.White);
             // Отрисовка фона настроек
-            spriteBatch.Draw(_settingsAreaTexture, new Rectangle(1010, 10, _settingsAreaTexture.Width, _settingsAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_settingsAreaTexture, new Rectangle(1230, 320, _settingsAreaTexture.Width, _settingsAreaTexture.Height), Color.White);
+
+            spriteBatch.Draw(_nameAreaTexture, new Rectangle(530, 10, _nameAreaTexture.Width, _nameAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_videoAreaTexture, new Rectangle(1230, 90, _videoAreaTexture.Width, _videoAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_newsAreaTexture, new Rectangle(1230, 780, _newsAreaTexture.Width, _newsAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_graphAreaTexture, new Rectangle(10, 780, _graphAreaTexture.Width, _graphAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_healthStatusAreaTexture, new Rectangle(20, 790, _healthStatusAreaTexture.Width, _healthStatusAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonAreaTexture, new Rectangle(1230, 1000, _buttonAreaTexture.Width, _buttonAreaTexture.Height), Color.White);
+
+            spriteBatch.Draw(_buttonRetryTexture, new Rectangle(1240, 1010, _buttonRetryTexture.Width, _buttonRetryTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonStartTexture, new Rectangle(1463, 1010, _buttonStartTexture.Width, _buttonStartTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonBackTexture, new Rectangle(1685, 1010, _buttonBackTexture.Width, _buttonBackTexture.Height), Color.White);
+
 
             // Отрисовка слайдеров
             deathChanceSlider.Draw(spriteBatch);
@@ -192,9 +219,9 @@ namespace SimulatorEpidemic
             _epidemicGraph.Draw(spriteBatch);
 
             // Отрисовка количества выздоровевших, здоровых и больных людей
-            spriteBatch.DrawString(font_orbitiron, "Recovered: " + _humans.Count(h => h.State == Human.HealthState.Recovered), new Vector2(1020, 520), Color.Black);
-            spriteBatch.DrawString(font_orbitiron, "Healthy: " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(1020, 550), Color.Black);
-            spriteBatch.DrawString(font_orbitiron, "Infected: " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(1020, 580), Color.Black);
+            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(492, 844), Color.White);
+            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(770, 844), Color.White);
+            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Dead), new Vector2(1056, 844), Color.White);
         }
     }
 }
