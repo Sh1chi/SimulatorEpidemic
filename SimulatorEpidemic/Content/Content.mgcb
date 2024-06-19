@@ -13,6 +13,11 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin 17.mp4
+/importer:H264Importer
+/processor:VideoProcessor
+/build:17.mp4
+
 #begin backgroundMenu.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -60,6 +65,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:button_RETRY.png
+
+#begin button_sound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:button_sound.wav
 
 #begin button_START_2.png
 /importer:TextureImporter
@@ -220,6 +231,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:sliderTexture.png
+
+#begin texting.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:texting.wav
 
 #begin VideoArea.png
 /importer:TextureImporter

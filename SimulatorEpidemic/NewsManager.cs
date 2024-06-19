@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,10 @@ namespace SimulatorEpidemic
         private double timeSinceLastChar; // Время, прошедшее с последнего появления символа
         private bool isNewsFullyDisplayed; // Флаг для проверки, полностью ли отображена новость
 
-        public NewsManager(string[] initialNews, double intervalInSeconds)
+        private SoundEffect typingSound; // Звук набора текста
+        private SoundEffectInstance typingSoundInstance; // Экземпляр звука набора текста
+
+        public NewsManager(string[] initialNews, double intervalInSeconds, double charIntervalInSeconds, SoundEffect typingSound)
         {
             newsArray = initialNews; // Инициализация массива новостей
             currentNewsIndex = 0; // Инициализация индекса текущей новости
@@ -32,10 +36,14 @@ namespace SimulatorEpidemic
 
             currentNews = newsArray[currentNewsIndex]; // Установка текущей новости
             charIndex = 0; // Инициализация индекса текущего символа
-            charInterval = 0.05; // Установка интервала между появлением символов
+            charInterval = charIntervalInSeconds; // Установка интервала между появлением символов
             timeSinceLastChar = 0; // Инициализация времени с последнего появления символа
             isNewsFullyDisplayed = false; // Инициализация флага
+
+            this.typingSound = typingSound; // Инициализация звука набора текста
+            typingSoundInstance = typingSound.CreateInstance(); // Создание экземпляра звука
         }
+
 
         public string GetCurrentNews(GameTime gameTime)
         {
@@ -49,6 +57,10 @@ namespace SimulatorEpidemic
                 {
                     timeSinceLastChar = 0;
                     charIndex++; // Увеличение индекса текущего символа
+                    if (typingSoundInstance.State != SoundState.Playing)
+                    {
+                        typingSoundInstance.Play(); // Воспроизведение звука набора текста
+                    }
                 }
 
                 // Проверка, полностью ли отображена новость
@@ -56,6 +68,7 @@ namespace SimulatorEpidemic
                 {
                     isNewsFullyDisplayed = true;
                     timeSinceLastUpdate = 0; // Сброс времени для следующей новости
+                    typingSoundInstance.Stop(); // Остановка звука набора текста
                 }
             }
             else

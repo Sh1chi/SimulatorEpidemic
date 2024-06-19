@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 
 namespace SimulatorEpidemic
 {
@@ -29,6 +31,7 @@ namespace SimulatorEpidemic
 
         private NewsManager _newsManager; // Объект для управления новостями
         private string[] newsArray; // Массив строк для хранения новостных сообщений
+        private SoundEffect typingSound;
 
         // Поля для слайдеров
         private Slider deathChanceSlider;
@@ -47,7 +50,7 @@ namespace SimulatorEpidemic
         private float DeathCheckInterval = 3f;
         private float InfectionRadius = 25f;
 
-        private int humanCount = 50; // Общее количество людей в симуляции
+        private int humanCount = 100; // Общее количество людей в симуляции
         private EpidemicGraph _epidemicGraph; // График эпидемии
         private SpriteFont font_orbitiron; // Шрифт для отображения текста
 
@@ -125,8 +128,9 @@ namespace SimulatorEpidemic
             InitializeSliders();
             InitializeGraph();
 
+            typingSound = _content.Load<SoundEffect>("texting"); // Загрузка звука набора текста
             LoadNews(); // Загрузка новостей
-            _newsManager = new NewsManager(newsArray, 5); // обновление новостей каждые 5 секунд
+            _newsManager = new NewsManager(newsArray, 5, 0.05, typingSound); // Инициализация NewsManager с передачей звука
         }
 
         // Метод для загрузки новостей

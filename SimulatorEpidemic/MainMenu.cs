@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace SimulatorEpidemic
 {
@@ -12,6 +14,10 @@ namespace SimulatorEpidemic
         private Texture2D _startButtonTexture; // Текстура кнопки старт
         private Rectangle _buttonRectangle; // Прямоугольник, представляющий кнопку
         private ContentManager _content; // Менеджер контента для загрузки ресурсов
+
+
+        SoundEffect button_sound;
+        SoundEffectInstance button_sound_Instance;
 
         // Конструктор главного меню
         public MainMenu(ContentManager content)
@@ -33,6 +39,13 @@ namespace SimulatorEpidemic
 
             // Задаем координаты и размеры кнопки
             _buttonRectangle = new Rectangle(835, 890, _startButtonTexture.Width, _startButtonTexture.Height);
+
+            // Загружаем ранее добавленный ресурс audio1
+            button_sound = _content.Load<SoundEffect>("button_sound");
+
+            // Создаем экземпляры звуковых эффектов
+            button_sound_Instance = button_sound.CreateInstance();
+
         }
 
         // Метод обновления состояния главного меню
@@ -45,6 +58,9 @@ namespace SimulatorEpidemic
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 _buttonRectangle.Contains(mouseState.Position))
             {
+                // Начинаем воспроизведение звуковых эффектов
+                button_sound_Instance.Play();
+
                 // Изменение экрана на симулятор эпидемии
                 GameStateManager.Instance.ChangeScreen("EpidemicSimulator");
             }

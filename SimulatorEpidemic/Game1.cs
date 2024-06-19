@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -13,6 +14,7 @@ namespace SimulatorEpidemic
         private GameStateManager _gameStateManager; // Менеджер состояний игры
 
         Song song;
+        private SoundEffect typingSound;
 
         // Конструктор игры
         public Game1()
@@ -20,7 +22,7 @@ namespace SimulatorEpidemic
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferWidth = 1920;  // Устанавливаем ширину окна
             _graphics.PreferredBackBufferHeight = 1080; // Устанавливаем высоту окна
-            _graphics.IsFullScreen = true;  // Включаем полноэкранный режим
+            //_graphics.IsFullScreen = true;  // Включаем полноэкранный режим
             Content.RootDirectory = "Content"; // Директория для контента
             IsMouseVisible = true; // Делает курсор мыши видимым
         }
