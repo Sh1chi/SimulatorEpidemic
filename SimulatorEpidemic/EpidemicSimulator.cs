@@ -33,6 +33,9 @@ namespace SimulatorEpidemic
         private string[] newsArray; // Массив строк для хранения новостных сообщений
         private SoundEffect typingSound;
 
+        private GifAnimation _gifAnimation;
+
+
         // Поля для слайдеров
         private Slider deathChanceSlider;
         private Slider infectionRadiusSlider;
@@ -106,7 +109,7 @@ namespace SimulatorEpidemic
         {
             _backgroundSimulationTexture = _content.Load<Texture2D>("backgroundSimulation"); // Загрузка текстуры фона симуляции
             _simulationAreaTexture = _content.Load<Texture2D>("SimulationArea"); // Загрузка текстуры области симуляции
-            _settingsAreaTexture = _content.Load<Texture2D>("SettingsArea"); // Загрузка текстуры области настроек
+            _settingsAreaTexture = _content.Load<Texture2D>("SettingArea1"); // Загрузка текстуры области настроек
             _humanTexture = _content.Load<Texture2D>("Human"); // Загрузка текстуры человека
             font_orbitiron = _content.Load<SpriteFont>("orbitiron"); // Загрузка шрифта
             _buttonBackTexture = _content.Load<Texture2D>("button_BACK"); // Загрузка текстуры для кнопки "Назад"
@@ -131,6 +134,8 @@ namespace SimulatorEpidemic
             typingSound = _content.Load<SoundEffect>("texting"); // Загрузка звука набора текста
             LoadNews(); // Загрузка новостей
             _newsManager = new NewsManager(newsArray, 5, 0.05, typingSound); // Инициализация NewsManager с передачей звука
+
+            _gifAnimation = new GifAnimation(_graphicsDevice, "C:\\Users\\Shevc\\OneDrive\\Desktop\\Practice2\\videoplayback5.gif");
         }
 
         // Метод для загрузки новостей
@@ -173,6 +178,9 @@ namespace SimulatorEpidemic
         // Обновление логики симуляции
         public void Update(GameTime gameTime)
         {
+            // Обновляем анимацию видео
+            _gifAnimation.Update(gameTime);
+
             // Подсчет количества здоровых, зараженных и выздоровевших людей
             int healthyCount = _humans.Count(h => h.State == Human.HealthState.Healthy);
             int infectedCount = _humans.Count(h => h.State == Human.HealthState.Infected);
@@ -237,19 +245,21 @@ namespace SimulatorEpidemic
             // Отрисовка области симуляции
             spriteBatch.Draw(_simulationAreaTexture, new Rectangle(10, 90, _simulationAreaTexture.Width, _simulationAreaTexture.Height), Color.White);
             // Отрисовка фона настроек
-            spriteBatch.Draw(_settingsAreaTexture, new Rectangle(1230, 320, _settingsAreaTexture.Width, _settingsAreaTexture.Height), Color.White);
+            spriteBatch.Draw(_settingsAreaTexture, new Rectangle(1230, 254, _settingsAreaTexture.Width, _settingsAreaTexture.Height), Color.White);
 
             spriteBatch.Draw(_nameAreaTexture, new Rectangle(530, 10, _nameAreaTexture.Width, _nameAreaTexture.Height), Color.White);
-            spriteBatch.Draw(_videoAreaTexture, new Rectangle(1230, 90, _videoAreaTexture.Width, _videoAreaTexture.Height), Color.White);
+
             spriteBatch.Draw(_newsAreaTexture, new Rectangle(1230, 780, _newsAreaTexture.Width, _newsAreaTexture.Height), Color.White);
             spriteBatch.Draw(_graphAreaTexture, new Rectangle(10, 780, _graphAreaTexture.Width, _graphAreaTexture.Height), Color.White);
             spriteBatch.Draw(_healthStatusAreaTexture, new Rectangle(20, 790, _healthStatusAreaTexture.Width, _healthStatusAreaTexture.Height), Color.White);
-            spriteBatch.Draw(_buttonAreaTexture, new Rectangle(1230, 1000, _buttonAreaTexture.Width, _buttonAreaTexture.Height), Color.White);
+            //spriteBatch.Draw(_buttonAreaTexture, new Rectangle(1230, 1000, _buttonAreaTexture.Width, _buttonAreaTexture.Height), Color.White);
 
-            spriteBatch.Draw(_buttonRetryTexture, new Rectangle(1240, 1010, _buttonRetryTexture.Width, _buttonRetryTexture.Height), Color.White);
-            spriteBatch.Draw(_buttonStartTexture, new Rectangle(1463, 1010, _buttonStartTexture.Width, _buttonStartTexture.Height), Color.White);
-            spriteBatch.Draw(_buttonBackTexture, new Rectangle(1685, 1010, _buttonBackTexture.Width, _buttonBackTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonRetryTexture, new Rectangle(1240, 1005, _buttonRetryTexture.Width, _buttonRetryTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonStartTexture, new Rectangle(1463, 1005, _buttonStartTexture.Width, _buttonStartTexture.Height), Color.White);
+            spriteBatch.Draw(_buttonBackTexture, new Rectangle(1685, 1005, _buttonBackTexture.Width, _buttonBackTexture.Height), Color.White);
 
+            // Рисуем текущий кадр видео анимации на экране
+            _gifAnimation.Draw(spriteBatch, new Vector2(1325, 90));
 
             // Отрисовка слайдеров
             deathChanceSlider.Draw(spriteBatch);

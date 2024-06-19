@@ -22,7 +22,7 @@ namespace SimulatorEpidemic
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferWidth = 1920;  // Устанавливаем ширину окна
             _graphics.PreferredBackBufferHeight = 1080; // Устанавливаем высоту окна
-            //_graphics.IsFullScreen = true;  // Включаем полноэкранный режим
+            _graphics.IsFullScreen = true;  // Включаем полноэкранный режим
             Content.RootDirectory = "Content"; // Директория для контента
             IsMouseVisible = true; // Делает курсор мыши видимым
         }
