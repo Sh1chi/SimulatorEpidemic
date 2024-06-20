@@ -42,6 +42,7 @@ namespace SimulatorEpidemic
 
             this.typingSound = typingSound; // Инициализация звука набора текста
             typingSoundInstance = typingSound.CreateInstance(); // Создание экземпляра звука
+            typingSoundInstance.Volume = 0.2f;
         }
 
 
@@ -121,6 +122,16 @@ namespace SimulatorEpidemic
             }
 
             return wrappedText.ToString();
+        }
+
+        // Метод для сброса текущей новости и начала показа новой
+        public void ResetNews()
+        {
+            currentNewsIndex = random.Next(newsArray.Length); // Выбираем случайную новость из массива
+            currentNews = newsArray[currentNewsIndex]; // Устанавливаем текущую новость
+            charIndex = 0; // Сбрасываем индекс символов
+            isNewsFullyDisplayed = false; // Сбрасываем флаг полного отображения новости
+            typingSoundInstance.Stop(); // Останавливаем звук набора текста
         }
     }
 }

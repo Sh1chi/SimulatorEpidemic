@@ -45,6 +45,7 @@ namespace SimulatorEpidemic
 
             // Создаем экземпляры звуковых эффектов
             button_sound_Instance = button_sound.CreateInstance();
+            button_sound_Instance.Volume = 0.4f;
 
         }
 

@@ -49,6 +49,10 @@ namespace SimulatorEpidemic
 
             // Загружаем ранее добавленный ресурс audio1
             song = Content.Load<Song>("MainSong");
+
+            // Установка начальной громкости (от 0.0f до 1.0f)
+            MediaPlayer.Volume = 0.05f;
+
             // Начинаем проигрывание мелодии
             MediaPlayer.Play(song);
             // Повторять после завершения

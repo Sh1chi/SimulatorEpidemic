@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
@@ -31,9 +32,12 @@ namespace SimulatorEpidemic
 
         private NewsManager _newsManager; // Объект для управления новостями
         private string[] newsArray; // Массив строк для хранения новостных сообщений
-        private SoundEffect typingSound;
+        private SoundEffect typingSound; // Звуковой эффект для звука набора текста
 
-        private GifAnimation _gifAnimation;
+        SoundEffect button_sound; // Звуковой эффект кнопки
+        SoundEffectInstance button_sound_Instance; // Экземпляр звукового эффекта кнопки
+
+        private GifAnimation _gifAnimation; // Объект для анимации GIF
 
 
         // Поля для слайдеров
@@ -60,12 +64,27 @@ namespace SimulatorEpidemic
         private GraphicsDevice _graphicsDevice; // Графическое устройство
         private ContentManager _content; // Менеджер контента
 
+        private enum SimulationState
+        {
+            NotStarted, // Состояние: не начато
+            Running,    // Состояние: выполняется
+            Stopped     // Состояние: остановлено
+        }
+        private SimulationState _simulationState; // Текущее состояние симуляции
+
+        private Rectangle _buttonBackRectangle; // Прямоугольник для кнопки "Назад"
+        private Rectangle _buttonRetryRectangle; // Прямоугольник для кнопки "Повторить"
+        private Rectangle _buttonStartRectangle; // Прямоугольник для кнопки "Старт"
+
+        private MouseState _previousMouseState; // Предыдущее состояние мыши
+
         // Конструктор класса симулятора
         public EpidemicSimulator(ContentManager content, GraphicsDevice graphicsDevice)
         {
             _content = content;
             _graphicsDevice = graphicsDevice;
             random = new Random();
+            _simulationState = SimulationState.NotStarted;
         }
 
         // Инициализация
@@ -107,35 +126,49 @@ namespace SimulatorEpidemic
         // Метод для инициализации слайдеров и графика
         public void LoadContent()
         {
+            // Загрузка текстур фоновых элементов и интерфейса
+            _humanTexture = _content.Load<Texture2D>("Human"); // Загрузка текстуры человека
             _backgroundSimulationTexture = _content.Load<Texture2D>("backgroundSimulation"); // Загрузка текстуры фона симуляции
             _simulationAreaTexture = _content.Load<Texture2D>("SimulationArea"); // Загрузка текстуры области симуляции
             _settingsAreaTexture = _content.Load<Texture2D>("SettingArea1"); // Загрузка текстуры области настроек
-            _humanTexture = _content.Load<Texture2D>("Human"); // Загрузка текстуры человека
-            font_orbitiron = _content.Load<SpriteFont>("orbitiron"); // Загрузка шрифта
-            _buttonBackTexture = _content.Load<Texture2D>("button_BACK"); // Загрузка текстуры для кнопки "Назад"
-            _buttonRetryTexture = _content.Load<Texture2D>("button_RETRY"); // Загрузка текстуры для кнопки "Повторить"
-            _buttonStartTexture = _content.Load<Texture2D>("button_START_2"); // Загрузка текстуры для кнопки "Начать"
-            _buttonAreaTexture = _content.Load<Texture2D>("ButtonArea"); // Загрузка текстуры для области кнопок
             _graphAreaTexture = _content.Load<Texture2D>("GraphArea"); // Загрузка текстуры для области графика
             _healthStatusAreaTexture = _content.Load<Texture2D>("health_status_area"); // Загрузка текстуры для области статуса здоровья
             _nameAreaTexture = _content.Load<Texture2D>("NameArea"); // Загрузка текстуры для области имени
             _newsAreaTexture = _content.Load<Texture2D>("NewsArea"); // Загрузка текстуры для области новостей
             _videoAreaTexture = _content.Load<Texture2D>("VideoArea"); // Загрузка текстуры для области видео
 
+            // Загрузка текстур кнопок и элементов интерфейса
+            _buttonBackTexture = _content.Load<Texture2D>("button_BACK"); // Загрузка текстуры для кнопки "Назад"
+            _buttonRetryTexture = _content.Load<Texture2D>("button_RETRY"); // Загрузка текстуры для кнопки "Повторить"
+            _buttonStartTexture = _content.Load<Texture2D>("button_START_2"); // Загрузка текстуры для кнопки "Начать"
+            _buttonAreaTexture = _content.Load<Texture2D>("ButtonArea"); // Загрузка текстуры для области кнопок
+
             // Загрузка текстур для слайдеров
             _sliderTexture = _content.Load<Texture2D>("sliderTexture"); // Загрузка текстуры для слайдера
             _knobTexture = _content.Load<Texture2D>("knobTexture"); // Загрузка текстуры для ручки слайдера
 
-            // Инициализация после загрузки контента
-            InitializeHumans();
-            InitializeSliders();
-            InitializeGraph();
-
+            // Загрузка звуковых эффектов и других ресурсов
+            font_orbitiron = _content.Load<SpriteFont>("orbitiron"); // Загрузка шрифта
             typingSound = _content.Load<SoundEffect>("texting"); // Загрузка звука набора текста
             LoadNews(); // Загрузка новостей
-            _newsManager = new NewsManager(newsArray, 5, 0.05, typingSound); // Инициализация NewsManager с передачей звука
 
+            // Инициализация объектов и компонентов
+            _newsManager = new NewsManager(newsArray, 5, 0.05, typingSound); // Инициализация NewsManager с передачей звука
             _gifAnimation = new GifAnimation(_graphicsDevice, "C:\\Users\\Shevc\\OneDrive\\Desktop\\Practice2\\videoplayback5.gif");
+            InitializeHumans(); // Инициализация человеческих объектов
+            InitializeSliders(); // Инициализация слайдеров
+            InitializeGraph(); // Инициализация графика
+
+            // Инициализация прямоугольников для кнопок
+            _buttonBackRectangle = new Rectangle(1685, 1005, _buttonBackTexture.Width, _buttonBackTexture.Height); // Прямоугольник для кнопки "Назад"
+            _buttonRetryRectangle = new Rectangle(1240, 1005, _buttonRetryTexture.Width, _buttonRetryTexture.Height); // Прямоугольник для кнопки "Повторить"
+            _buttonStartRectangle = new Rectangle(1463, 1005, _buttonStartTexture.Width, _buttonStartTexture.Height); // Прямоугольник для кнопки "Начать"
+
+            // Загрузка и настройка звуковых эффектов
+            button_sound = _content.Load<SoundEffect>("button_sound"); // Загрузка звукового эффекта кнопки
+            button_sound_Instance = button_sound.CreateInstance(); // Создание экземпляра звукового эффекта кнопки
+            button_sound_Instance.Volume = 0.4f; // Установка громкости звукового эффекта
+
         }
 
         // Метод для загрузки новостей
@@ -178,18 +211,48 @@ namespace SimulatorEpidemic
         // Обновление логики симуляции
         public void Update(GameTime gameTime)
         {
-            // Обновляем анимацию видео
-            _gifAnimation.Update(gameTime);
+            // Получаем текущее состояние мыши
+            MouseState currentMouseState = Mouse.GetState();
+
+            // Обработка нажатий кнопок мыши
+            if (currentMouseState.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
+            {
+                // Если нажата кнопка "Начать"
+                if (_buttonStartRectangle.Contains(currentMouseState.Position))
+                {
+                    // Воспроизведение звукового эффекта кнопки
+                    button_sound_Instance.Play();
+                    _simulationState = SimulationState.Running; // Установка состояния симуляции на "Запущено"
+                }
+                // Если нажата кнопка "Повторить"
+                else if (_buttonRetryRectangle.Contains(currentMouseState.Position))
+                {
+                    // Воспроизведение звукового эффекта кнопки
+                    button_sound_Instance.Play();
+                    ResetSimulation(); // Сброс симуляции
+                }
+                // Если нажата кнопка "Назад"
+                else if (_buttonBackRectangle.Contains(currentMouseState.Position))
+                {
+                    // Воспроизведение звукового эффекта кнопки
+                    button_sound_Instance.Play();
+                    ResetSimulation(); // Сброс симуляции
+
+                    _simulationState = SimulationState.Stopped; // Установка состояния симуляции на "Остановлено"
+
+                    // Изменение экрана на главное меню
+                    GameStateManager.Instance.ChangeScreen("MainMenu");
+                }
+            }
+
+            _previousMouseState = currentMouseState; // Сохранение текущего состояния мыши для следующего кадра
 
             // Подсчет количества здоровых, зараженных и выздоровевших людей
             int healthyCount = _humans.Count(h => h.State == Human.HealthState.Healthy);
             int infectedCount = _humans.Count(h => h.State == Human.HealthState.Infected);
             int recoveredCount = _humans.Count(h => h.State == Human.HealthState.Recovered);
 
-            // Добавление новых данных в график эпидемии
-            _epidemicGraph.AddDataPoints(healthyCount, infectedCount, recoveredCount);
-
-            // Обновление состояния слайдеров и сохранение значений
+            // Обновление состояния и значений слайдеров
             deathChanceSlider.Update(gameTime);
             DeathChance = deathChanceSlider.Value;
 
@@ -205,36 +268,56 @@ namespace SimulatorEpidemic
             recoveryTimeSlider.Update(gameTime);
             RecoveryTime = recoveryTimeSlider.Value;
 
-            // Обновление состояния каждого человека
-            foreach (var human in _humans)
+            // Если симуляция запущена, выполняем обновление состояний
+            if (_simulationState == SimulationState.Running)
             {
-                human.Update(gameTime);
-                human.deathChance = DeathChance;
-                human.infectionRadius = InfectionRadius;
-                human.infectionChance = InfectionChance;
-                human.incubationTime = IncubationTime;
-                human.recoveryTime = RecoveryTime;
-            }
+                // Обновление анимации GIF
+                _gifAnimation.Update(gameTime);
 
-            // Проверка и обработка столкновений между людьми
-            for (int i = 0; i < _humans.Count; i++)
-            {
-                for (int j = i + 1; j < _humans.Count; j++)
+                // Добавление новых данных в график эпидемии
+                _epidemicGraph.AddDataPoints(healthyCount, infectedCount, recoveredCount);
+
+                // Обновление состояния каждого человека
+                foreach (var human in _humans)
                 {
-                    Human human1 = _humans[i];
-                    Human human2 = _humans[j];
+                    human.Update(gameTime); // Обновление состояния человека
+                    human.deathChance = DeathChance; // Установка шанса смерти
+                    human.infectionRadius = InfectionRadius; // Установка радиуса инфекции
+                    human.infectionChance = InfectionChance; // Установка шанса заражения
+                    human.incubationTime = IncubationTime; // Установка времени инкубации
+                    human.recoveryTime = RecoveryTime; // Установка времени выздоровления
+                }
 
-                    // Попытка заражения
-                    human1.TryInfect(human2);
-
-                    // Проверяем, столкнулись ли эти два человека
-                    if (human1.CheckCollision(human2))
+                // Проверка и обработка столкновений между людьми
+                for (int i = 0; i < _humans.Count; i++)
+                {
+                    for (int j = i + 1; j < _humans.Count; j++)
                     {
-                        // Если столкновение произошло, обрабатываем его
-                        human1.HandleCollision(human2);
+                        Human human1 = _humans[i];
+                        Human human2 = _humans[j];
+
+                        // Попытка заражения между двумя людьми
+                        human1.TryInfect(human2);
+
+                        // Проверка на столкновение между двумя людьми
+                        if (human1.CheckCollision(human2))
+                        {
+                            // Если столкновение произошло, обрабатываем его
+                            human1.HandleCollision(human2);
+                        }
                     }
                 }
             }
+        }
+
+        // Сброс состояния симуляции
+        public void ResetSimulation()
+        {
+            _simulationState = SimulationState.NotStarted; // Сброс состояния симуляции на "Не начато"
+            InitializeHumans(); // Переинициализация людей
+            InitializeGraph(); // Переинициализация графика
+            InitializeSliders(); // Переинициализация слайдеров
+            _newsManager.ResetNews(); // Сброс новостей в менеджере новостей
         }
 
         // Отрисовка симуляции
@@ -254,12 +337,9 @@ namespace SimulatorEpidemic
             spriteBatch.Draw(_healthStatusAreaTexture, new Rectangle(20, 790, _healthStatusAreaTexture.Width, _healthStatusAreaTexture.Height), Color.White);
             //spriteBatch.Draw(_buttonAreaTexture, new Rectangle(1230, 1000, _buttonAreaTexture.Width, _buttonAreaTexture.Height), Color.White);
 
-            spriteBatch.Draw(_buttonRetryTexture, new Rectangle(1240, 1005, _buttonRetryTexture.Width, _buttonRetryTexture.Height), Color.White);
-            spriteBatch.Draw(_buttonStartTexture, new Rectangle(1463, 1005, _buttonStartTexture.Width, _buttonStartTexture.Height), Color.White);
-            spriteBatch.Draw(_buttonBackTexture, new Rectangle(1685, 1005, _buttonBackTexture.Width, _buttonBackTexture.Height), Color.White);
-
-            // Рисуем текущий кадр видео анимации на экране
-            _gifAnimation.Draw(spriteBatch, new Vector2(1325, 90));
+            spriteBatch.Draw(_buttonRetryTexture, _buttonRetryRectangle, Color.White);
+            spriteBatch.Draw(_buttonStartTexture, _buttonStartRectangle, Color.White);
+            spriteBatch.Draw(_buttonBackTexture, _buttonBackRectangle, Color.White);
 
             // Отрисовка слайдеров
             deathChanceSlider.Draw(spriteBatch);
@@ -268,24 +348,30 @@ namespace SimulatorEpidemic
             incubationTimeSlider.Draw(spriteBatch);
             recoveryTimeSlider.Draw(spriteBatch);
 
-            // Отрисовка людей
-            foreach (var human in _humans)
+            if (_simulationState == SimulationState.Running)
             {
-                human.Draw(spriteBatch, _humanTexture);
+                // Рисуем текущий кадр видео анимации на экране
+                _gifAnimation.Draw(spriteBatch, new Vector2(1325, 90));
+
+                // Отрисовка людей
+                foreach (var human in _humans)
+                {
+                    human.Draw(spriteBatch, _humanTexture);
+                }
+
+                // Отрисовка графика эпидемии
+                _epidemicGraph.Draw(spriteBatch);
+
+                // Отрисовка количества выздоровевших, здоровых и больных людей
+                spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(492, 844), Color.White);
+                spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(770, 844), Color.White);
+                spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Dead), new Vector2(1056, 844), Color.White);
+
+                // Вывод новостей
+                string currentNews = _newsManager.GetCurrentNews(gameTime); // Получение текущей новости
+                string wrappedNews = _newsManager.WrapText(currentNews, font_orbitiron, _newsAreaTexture.Width - 40); // Перенос текста
+                spriteBatch.DrawString(font_orbitiron, wrappedNews, new Vector2(1250, 850), Color.White); // Отображение текста
             }
-
-            // Отрисовка графика эпидемии
-            _epidemicGraph.Draw(spriteBatch);
-
-            // Отрисовка количества выздоровевших, здоровых и больных людей
-            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Healthy), new Vector2(492, 844), Color.White);
-            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Infected), new Vector2(770, 844), Color.White);
-            spriteBatch.DrawString(font_orbitiron, "// " + _humans.Count(h => h.State == Human.HealthState.Dead), new Vector2(1056, 844), Color.White);
-
-
-            string currentNews = _newsManager.GetCurrentNews(gameTime); // Получение текущей новости
-            string wrappedNews = _newsManager.WrapText(currentNews, font_orbitiron, _newsAreaTexture.Width - 40); // Перенос текста
-            spriteBatch.DrawString(font_orbitiron, wrappedNews, new Vector2(1250, 850), Color.White); // Отображение текста
         }
     }
 }
