@@ -19,6 +19,7 @@ public class Slider
     private int knobHeight; // Высота ручки
     private SpriteFont font; // Шрифт для отображения текста
     private string sliderName; // Название ползунка
+    public bool IsEnabled { get; set; } // Свойство для управления доступностью ползунка
 
     // Конструктор для инициализации ползунка
     public Slider(Texture2D sliderTexture, Texture2D knobTexture, Vector2 position, float minValue, float maxValue, float initialValue, SpriteFont font, string sliderName)
@@ -34,6 +35,7 @@ public class Slider
         this.knobHeight = knobTexture.Height;
         this.font = font;
         this.sliderName = sliderName;
+        this.IsEnabled = true; // По умолчанию ползунок доступен
         UpdateKnobPosition(); // Обновляем позицию ручки и закрашенной части
     }
 
@@ -66,6 +68,8 @@ public class Slider
     // Метод для обновления состояния ползунка на основе ввода мыши
     public void Update(GameTime gameTime)
     {
+        if (!IsEnabled) return; // Если ползунок недоступен, выходим из метода
+
         MouseState mouseState = Mouse.GetState();
 
         // Проверяем, нажата ли левая кнопка мыши и находится ли указатель на ручке
@@ -98,12 +102,14 @@ public class Slider
     // Метод для отрисовки ползунка
     public void Draw(SpriteBatch spriteBatch)
     {
+        Color color = IsEnabled ? Color.Red : Color.Gray; // Цвет ползунка в зависимости от доступности
+
         // Отрисовка закрашенной части ползунка
-        spriteBatch.Draw(sliderTexture, filledRectangle, Color.Red);
+        spriteBatch.Draw(sliderTexture, filledRectangle, color);
         // Отрисовка незакрашенной части ползунка
         spriteBatch.Draw(sliderTexture, new Rectangle(filledRectangle.Right, sliderRectangle.Y, sliderRectangle.Width - filledRectangle.Width, sliderRectangle.Height), Color.White);
         // Отрисовка ручки ползунка
-        spriteBatch.Draw(knobTexture, knobRectangle, Color.Red);
+        spriteBatch.Draw(knobTexture, knobRectangle, color);
 
         // Отрисовка текущего значения под ручкой
         string valueText = currentValue.ToString("F2"); // Преобразование текущего значения в строку с двумя знаками после запятой

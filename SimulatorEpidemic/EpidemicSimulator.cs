@@ -112,8 +112,8 @@ namespace SimulatorEpidemic
             infectionChanceSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1300, 570), 0.0f, 1f, InfectionChance, font_orbitiron12, "Infection Chance");
             incubationTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 370), 0f, 15f, IncubationTime, font_orbitiron12, "Incubation Time");
             recoveryTimeSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 470), 0f, 15f, RecoveryTime, font_orbitiron12, "Recovery Time");
-            speedSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 570), 20f, 150f, Speed, font_orbitiron12, "Speed");
-            initialHumanCountSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1450, 670), 50, 200, humanCount, font_orbitiron12, "Human Count");
+            speedSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1600, 570), 20f, 200f, Speed, font_orbitiron12, "Speed");
+            initialHumanCountSlider = new Slider(_sliderTexture, _knobTexture, new Vector2(1450, 670), 50, 150, humanCount, font_orbitiron12, "Human Count");
         }
 
         // Инициализация людей
@@ -172,7 +172,6 @@ namespace SimulatorEpidemic
             _newsManager = new NewsManager(newsArray, 5, 0.05, typingSound); // Инициализация NewsManager с передачей звука
             _gifAnimation = new GifAnimation(_graphicsDevice, "C:\\Users\\Shevc\\OneDrive\\Desktop\\Practice2\\videoplayback5.gif");
             InitializeSliders(); // Инициализация слайдеров
-            InitializeGraph(); // Инициализация графика
 
 
             // Загрузка и настройка звуковых эффектов
@@ -240,8 +239,10 @@ namespace SimulatorEpidemic
             if (startButton.IsClicked)
             {
                 _simulationState = SimulationState.Running;
+                initialHumanCountSlider.IsEnabled = false; // Отключение ползунка "Human Count"
                 startButton.IsEnabled = false; // Отключение кнопки "Start"
                 InitializeHumans();
+                InitializeGraph();
             }
 
             if (retryButton.IsClicked)
@@ -394,14 +395,6 @@ namespace SimulatorEpidemic
                 string currentNews = _newsManager.GetCurrentNews(gameTime); // Получение текущей новости
                 string wrappedNews = _newsManager.WrapText(currentNews, font_orbitiron12, _newsAreaTexture.Width - 40); // Перенос текста
                 spriteBatch.DrawString(font_orbitiron12, wrappedNews, new Vector2(1250, 850), Color.White); // Отображение текста
-
-                // Получаем текущее состояние мыши
-                MouseState currentMouseState = Mouse.GetState();
-                // Проверяем, нажата ли левая кнопка мыши и находится ли указатель на ручке
-                if (_initialHumanCountSliderRectangle.Contains(currentMouseState.Position))
-                {
-                    spriteBatch.DrawString(font_orbitiron14, "Warnings", new Vector2(1450, 700), Color.White);
-                }
             }
         }
     }
