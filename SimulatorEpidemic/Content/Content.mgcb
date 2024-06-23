@@ -186,12 +186,26 @@
 /processorParam:TextureFormat=Color
 /build:NewsArea.png
 
-#begin orbitiron.spritefont
+#begin orbitiron12.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:orbitiron.spritefont
+/build:orbitiron12.spritefont
+
+#begin orbitiron14.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:orbitiron14.spritefont
+
+#begin orbitiron16.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:orbitiron16.spritefont
 
 #begin Orbitron.ttf
 /copy:Orbitron.ttf

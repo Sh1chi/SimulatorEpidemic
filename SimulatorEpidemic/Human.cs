@@ -19,7 +19,6 @@ namespace SimulatorEpidemic
 
         private Vector2 _position;       // Позиция человека на экране
         private Vector2 _direction;      // Направление движения человека
-        private float _speed;            // Скорость движения человека
         private float _radius;           // Радиус круга, представляющего человека
 
         private int _screenWidth;        // Ширина экрана
@@ -30,6 +29,7 @@ namespace SimulatorEpidemic
         public float incubationTime;    // Время инкубационного периода в секундах
         public float recoveryTime;      // Время выздоровления в секундах
         public float deathChance;      // Вероятность смерти во время болезни
+        public int speed;      // Вероятность смерти во время болезни
 
         private float infectionTimer;    // Таймер для отслеживания времени заражения
 
@@ -45,7 +45,7 @@ namespace SimulatorEpidemic
 
 
         // Конструктор человека, инициализирующий его позицию, состояние здоровья и параметры движения
-        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval, float incubationTime, float infectionRadius)
+        public Human(int screenWidth, int screenHeight, float radius, float infectionChance, float recoveryTime, float deathChance, float deathCheckInterval, float incubationTime, float infectionRadius, int speed)
         {
             random = new Random();
             _screenWidth = screenWidth;
@@ -57,6 +57,7 @@ namespace SimulatorEpidemic
             this.deathCheckInterval = deathCheckInterval;
             this.incubationTime = incubationTime;
             this.infectionRadius = infectionRadius;
+            this.speed = speed;
 
             // Учитываем смещение области симуляции
             int offsetX = 10;
@@ -64,7 +65,6 @@ namespace SimulatorEpidemic
             _position = new Vector2(random.Next((int)_radius + offsetX + 1, screenWidth + offsetX - (int)_radius),
                                     random.Next((int)_radius + offsetY + 1, screenHeight + offsetY - (int)_radius));
             
-            _speed = 100f;
             _direction = GetRandomDirection();
 
             // Инициализация таймера для изменения направления движения
@@ -79,7 +79,7 @@ namespace SimulatorEpidemic
         public void Update(GameTime gameTime)
         {
             // Обновление позиции человека
-            _position += _direction * _speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _position += _direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Проверка столкновения с границами экрана и изменение направления при необходимости
             CheckScreenCollision();
@@ -281,7 +281,7 @@ namespace SimulatorEpidemic
                         // Если вероятность сработала, изменяем состояние на "мертвый"
                         State = HealthState.Dead;
                         _direction = Vector2.Zero; // Остановка движения при смерти
-                        _speed = 0f; // Остановка движения при смерти
+                        speed = 0; // Остановка движения при смерти
                     }
                 }
 

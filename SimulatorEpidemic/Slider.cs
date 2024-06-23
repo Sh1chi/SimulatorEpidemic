@@ -113,7 +113,7 @@ public class Slider
 
         // Отрисовка названия ползунка над ползунком
         Vector2 nameSize = font.MeasureString(sliderName); // Измерение размера текста названия
-        Vector2 namePosition = new Vector2(sliderRectangle.X + sliderRectangle.Width / 2 - nameSize.X / 2, sliderRectangle.Y - nameSize.Y - 7); // Позиция текста названия над ползунком
+        Vector2 namePosition = new Vector2(sliderRectangle.X + sliderRectangle.Width / 2 - nameSize.X / 2, sliderRectangle.Y - nameSize.Y - 10); // Позиция текста названия над ползунком
         spriteBatch.DrawString(font, sliderName, namePosition, Color.White); // Отрисовка текста названия
     }
 }
